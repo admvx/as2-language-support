@@ -1,0 +1,10 @@
+*
+*/**
+
+!package.json
+!README.md
+!icon.png
+!language-configuration.json
+!syntaxes/**
+!client/out/extension.js
+!server/out/server.js

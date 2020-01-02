@@ -1,0 +1,64 @@
+{
+  "name": "as2-language-support",
+  "displayName": "AS2 Language Support",
+  "description": "Syntax highlighting and intellisense for ActionScript 2.0 in Visual Studio Code via the LSP protocol",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:admvx/as2-language-support.git"
+  },
+  "version": "1.0.0",
+  "author": "Adam Vernon",
+  "publisher": "admvx",
+  "icon": "icon.png",
+  "license": "MIT",
+  "categories": [
+    "Programming Languages"
+  ],
+  "engines": {
+    "vscode": "^1.36.0"
+  },
+  "activationEvents": [
+    "onLanguage:actionscript",
+    "onLanguage:ActionScript"
+  ],
+  "main": "./client/out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "actionscript",
+        "aliases": [
+          "ActionScript",
+          "as2"
+        ],
+        "extensions": [
+          ".as"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "actionscript",
+        "scopeName": "source.as2",
+        "path": "./syntaxes/ActionScript.plist"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run webpack",
+    "webpack": "webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "clear-deps": "rm -f package-lock.json && rm -rf node_modules && rm -f client/package-lock.json && rm -rf client/node_modules && rm -f server/package-lock.json && rm -rf server/node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^13.0.0",
+    "merge-options": "^2.0.0",
+    "ts-loader": "^6.2.1",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4",
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10"
+  }
+}
