@@ -17,6 +17,8 @@ const matchedParens = /(?:\((?:(?!\().)*?\))/g;                     //Matches we
 const slashMatcher = /\//g;                                         //Matches forward slashes
 const asExtensionMatcher = /\.as$/i;                                //Matches strings ending in .as
 
+interface SymbolChainLink { identifier: string; called: boolean; }
+
 export class ActionContext {
   
   public static rootPath: string = '';  //TODO: Need a more accurate value for this to avoid i/o errors when the vscode folder is not the class root
@@ -50,12 +52,13 @@ export class ActionContext {
     if (! symbolChain.length) return this.getInnerSymbols(parsedClass, VisibilityFilter.EVERYTHING, textDocumentPosition);
     
     let nextClass: ActionClass = parsedClass;
-    let returnType: string, symbolName: string, isThisOrSuper: boolean, member: ActionParameter;
+    let returnType: string, symbolName: string, symbolCalled: boolean, isThisOrSuper: boolean, member: ActionParameter;
     let nextVisibility: VisibilityFilter = VisibilityFilter.EVERYTHING;
     try {
       for (let i = 0, l = symbolChain.length; i < l; i++) {
-        symbolName = symbolChain[i];
-        if (i === 0 && nextClass.shortType === symbolName) {
+        symbolName = symbolChain[i].identifier;
+        symbolCalled = symbolChain[i].called;
+        if (!symbolCalled && i === 0 && parsedClass.shortType === symbolName) {
           nextVisibility = VisibilityFilter.ALL_STATIC;
           continue;
         }
@@ -63,8 +66,11 @@ export class ActionContext {
           isThisOrSuper = symbolName === 'this' || symbolName === 'super';
           member = await nextClass.getMemberByName(symbolName, nextVisibility, i === 0 ? lineIndex : null);
           if (member.isConstructor) throw new Error('Do not want constructor');
-          returnType = member.returnType;
           nextVisibility = isThisOrSuper ? VisibilityFilter.ALL_INSTANCE : VisibilityFilter.PUBLIC_INSTANCE;
+          returnType = member.returnType;
+          if (member.isMethod && !symbolCalled) {
+            returnType = 'Function';
+          }
         } catch {
           if (i === 0) {
             try {
@@ -80,6 +86,9 @@ export class ActionContext {
         }
         returnType = nextClass.importMap[returnType] || returnType;
         nextClass = await this.getClassByFullType(returnType);
+        if (symbolCalled && nextClass.constructorMethod) {
+          nextVisibility = VisibilityFilter.PUBLIC_INSTANCE;
+        }
       }
     } catch (e) { return []; }
     
@@ -95,21 +104,26 @@ export class ActionContext {
     
     let lineIndex = textDocumentPosition.position.line;
     let line = ambientClass.lines[lineIndex].substr(0, textDocumentPosition.position.character).trim().replace(stringMatcher, '');
-    line = recursiveReplace(line, matchedParens);
-    let callBoundary = line.lastIndexOf('(');
+    let noMatchedParens = recursiveReplace(line, matchedParens);
+    let callBoundary = noMatchedParens.lastIndexOf('(');
     if (callBoundary === -1) return null;
     
+    line = recursiveReplace(line, matchedParens, '()');
+    callBoundary = line.lastIndexOf('(');
     let callOuter = line.substr(0, callBoundary);
     let callInner = line.substr(callBoundary);
     callInner = recursiveReplace(callInner, braceMatcher);
     callInner = recursiveReplace(callInner, bracketMatcher);
     let paramIndex = callInner.split(',').length - 1;
     let symbolChain = this.getSymbolChainFromLine(callOuter);
+    let chainLength = symbolChain.length;
     
-    if (symbolChain.length === 0 || symbolChain[symbolChain.length - 1] === 'function' || symbolChain[symbolChain.length - 2] === 'function') return null;
+    if (chainLength === 0) return null;
+    if (symbolChain[chainLength - 1] && symbolChain[chainLength - 1].identifier === 'function') return null;
+    if (symbolChain[chainLength - 2] && symbolChain[chainLength - 2].identifier === 'function') return null;
     
     let member: ActionParameter;
-    if (ambientClass.superClass && symbolChain.length === 1 && symbolChain[0] === 'super') {
+    if (ambientClass.superClass && chainLength === 1 && symbolChain[0].identifier === 'super') {
       let superClass = await this.getClassByFullType(ambientClass.superClass);
       member = superClass && superClass.constructorMethod;
     } else {  
@@ -172,7 +186,7 @@ export class ActionContext {
     };
   }
   
-  private static getSymbolChainFromLine(line: string, expectGarbageAtEol?: boolean): string[] {
+  private static getSymbolChainFromLine(line: string, expectGarbageAtEol?: boolean): SymbolChainLink[] {
     let tokens = line.split(tokenSplitter); //Odd-numbered array of tokens and delimiters, where the first and last elements are zero-or-longer delimiter strings
     if (expectGarbageAtEol && tokens[tokens.length - 1] !== '.') {
       tokens.pop();
@@ -180,7 +194,8 @@ export class ActionContext {
     }
     
     let token: string, delimiter: string, delimiters: string[];
-    let symbolChain: string[] = [];
+    let symbolCalled: boolean = false;
+    let symbolChain: SymbolChainLink[] = [];
     token_pair_loop: while (tokens.length) {
       delimiters = tokens.pop().replace(symbolMatcher, '').split('');
       delimiter_loop: while (delimiters.length) {
@@ -188,17 +203,19 @@ export class ActionContext {
         if (delimiter === '.') {
           continue;
         } else if (delimiter === ')') {
+          symbolCalled = true;
           if (delimiters.length) {
             tokens.push(delimiters.join(''), 'crud');
           }
-          this.spliceUpToMatch(tokens, ')', '('); //Consider adding the next symbol and flagging it as called rather than accessed directly
+          this.spliceUpToMatch(tokens, ')', '(');
           break delimiter_loop;
         } else {
           break token_pair_loop;
         }
       }
       token = tokens.pop();
-      token && symbolChain.unshift(token);
+      token && symbolChain.unshift({ identifier: token, called: symbolCalled });
+      symbolCalled = false;
     }
     return symbolChain;
   }
@@ -221,13 +238,13 @@ export class ActionContext {
     //Consider special handling of cases where the matching character was found but there's still stuff remaining in the current delimiter that we may not want to lose - e.g. another opening bracket
   }
   
-  private static async traverseSymbolChainToMember(symbolChain: string[], ambientClass: ActionClass, lineIndex: number, preferClass?: boolean): Promise<[ActionParameter, ActionClass] | null> {
+  private static async traverseSymbolChainToMember(symbolChain: SymbolChainLink[], ambientClass: ActionClass, lineIndex: number, preferClass?: boolean): Promise<[ActionParameter, ActionClass] | null> {
     let nextClass: ActionClass = ambientClass;
     let nextVisibility: VisibilityFilter = VisibilityFilter.EVERYTHING;
-    let returnType: string, member: ActionParameter, symbolName: string, isThisOrSuper: boolean, l = symbolChain.length;
+    let returnType: string, member: ActionParameter, symbolName: string, symbolCalled: boolean, isThisOrSuper: boolean, l = symbolChain.length;
     
     if (preferClass && l === 1) {
-      symbolName = symbolChain[0];
+      symbolName = symbolChain[0].identifier;
       returnType = ambientClass.importMap[symbolName];
       if (returnType) {
         return [null, await this.getClassByFullType(returnType)];
@@ -238,13 +255,17 @@ export class ActionContext {
     
     try {
       for (let i = 0; i < l; i++) {
+        symbolName = symbolChain[i].identifier;
+        symbolCalled = symbolChain[i].called;
+        isThisOrSuper = symbolName === 'this' || symbolName === 'super';
         try {
-          symbolName = symbolChain[i];
-          isThisOrSuper = symbolName === 'this' || symbolName === 'super';
           member = await nextClass.getMemberByName(symbolName, nextVisibility, i === 0 ? lineIndex : null);
           if (member.isConstructor) throw new Error('Do not want constructor');
           nextVisibility = isThisOrSuper ? VisibilityFilter.ALL_INSTANCE : VisibilityFilter.PUBLIC_INSTANCE;
           returnType = member.returnType;
+          if (member.isMethod && !symbolCalled) {
+            returnType = 'Function';
+          }
           if (i === l - 1) {
             break;
           }
@@ -267,6 +288,9 @@ export class ActionContext {
         }
         returnType = nextClass.importMap[returnType] || returnType;
         nextClass = await this.getClassByFullType(returnType);
+        if (symbolCalled && nextClass.constructorMethod) {
+          nextVisibility = VisibilityFilter.PUBLIC_INSTANCE;
+        }
       }
     } catch { return null; }
     
