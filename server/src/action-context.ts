@@ -106,7 +106,7 @@ export class ActionContext {
     let paramIndex = callInner.split(',').length - 1;
     let symbolChain = this.getSymbolChainFromLine(callOuter);
     
-    if (symbolChain[symbolChain.length - 1] === 'function' || symbolChain[symbolChain.length - 2] === 'function') return null;
+    if (symbolChain.length === 0 || symbolChain[symbolChain.length - 1] === 'function' || symbolChain[symbolChain.length - 2] === 'function') return null;
     
     let memberAndClass = await this.traverseSymbolChainToMember(symbolChain, ambientClass, lineIndex);
     let member = memberAndClass && memberAndClass[0];
