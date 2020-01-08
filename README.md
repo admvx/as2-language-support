@@ -20,5 +20,12 @@ https://github.com/admvx/as2-language-support
 
 ## Release Notes
 
+### 1.0.1
+Addresses the following issues:
+- No method signature support for the super constructor
+- Type casts trigger completions for static instead of instance properties
+- Parentheses triggers signature completion for class constructor
+- No differentiation between called methods and accessed properties
+
 ### 1.0.0
 Initial release
