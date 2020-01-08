@@ -108,8 +108,14 @@ export class ActionContext {
     
     if (symbolChain.length === 0 || symbolChain[symbolChain.length - 1] === 'function' || symbolChain[symbolChain.length - 2] === 'function') return null;
     
-    let memberAndClass = await this.traverseSymbolChainToMember(symbolChain, ambientClass, lineIndex);
-    let member = memberAndClass && memberAndClass[0];
+    let member: ActionParameter;
+    if (ambientClass.superClass && symbolChain.length === 1 && symbolChain[0] === 'super') {
+      let superClass = await this.getClassByFullType(ambientClass.superClass);
+      member = superClass && superClass.constructorMethod;
+    } else {  
+      let memberAndClass = await this.traverseSymbolChainToMember(symbolChain, ambientClass, lineIndex);
+      member = memberAndClass && memberAndClass[0];
+    }
     
     if (! (member && member.isMethod)) return null;
     let method = <ActionMethod>member;
