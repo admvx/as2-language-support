@@ -1,11 +1,11 @@
 import * as fse from 'fs-extra';
-import * as path from 'path';
+import { URI } from 'vscode-uri';
 import { LogLevel, logIt, ActionConfig } from './config';
 
 export class DirectoryUtility {
 
   public static fileNamesInDirectory(directoryPath: string, fileNameFilter?: RegExp, includePathInResults: boolean = true): Promise<string[]> {
-    return fse.readdir(directoryPath)
+    return fse.readdir(URI.parse(directoryPath).fsPath)
       .then(fileNames => {
         if (fileNameFilter) {
           fileNames = fileNames.filter(fileName => fileName.match(fileNameFilter));
@@ -22,11 +22,26 @@ export class DirectoryUtility {
   }
 
   public static concatPaths(start: string, end: string): string {
-    return path.join(start, end);
+    return start + '/' + end;
   }
 
   public static typeToPath(packageIdentifier: string): string {
-    return packageIdentifier.replace(/\./g, path.sep);
+    return packageIdentifier.replace(/\./g, '/');
+  }
+  
+  public static fileUriAndTypeToBaseUri(fileUri: string, fullType: string): string {
+    if (!fileUri || !fullType) return '';
+    
+    let packageDepth = fullType.split('.').length;
+    let lastFoundIndex: number, directoriesPopped = 0;
+    
+    while (directoriesPopped < packageDepth && lastFoundIndex !== -1) {
+      lastFoundIndex = fileUri.lastIndexOf('/', lastFoundIndex - 1);
+      directoriesPopped ++;
+    }
+    if (lastFoundIndex === undefined || lastFoundIndex === -1 || directoriesPopped < packageDepth) return '';
+    
+    return fileUri.substr(0, lastFoundIndex);
   }
 
 }
@@ -37,17 +52,20 @@ export class LoadQueue {
   private static _chain: Promise<string> = Promise.resolve('');
   private static _naughtyList: { [path: string]: boolean } = { };
 
-  public static enqueue(path: string): Promise<string> {
-    if (this._naughtyList[path]) {
-      return Promise.reject(`Already tried to load ${path} and failed. Aborting.`);
+  public static enqueue(pathUri: string): Promise<string> {
+    let filePath = URI.parse(pathUri).fsPath;
+    
+    if (this._naughtyList[filePath]) {
+      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.WARNING, message: `Already tried to load ${filePath} and failed. Aborting.` });
+      return Promise.resolve(null);
     }
     
-    if (this._promiseMap[path]) {
-      return this._promiseMap[path];
+    if (this._promiseMap[filePath]) {
+      return this._promiseMap[filePath];
     }
-
-    return this._promiseMap[path] = this._chain = this._chain
-      .then(() => this.executeLoad(path));
+    
+    return this._promiseMap[filePath] = this._chain = this._chain
+      .then(() => this.executeLoad(filePath));
   }
   
   private static executeLoad(path: string): Promise<string> {
