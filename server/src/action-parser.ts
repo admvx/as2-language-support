@@ -56,6 +56,8 @@ export class ActionParser {
     this.wipClass.fileUri = fileUri;
     this.wipClass.lines = fileContent.split(/\r?\n/);
     
+    let imports: string[] = [];
+    
     let scopeStack: ActionScope[] = [ActionScope.BASE];
     for (let i = 0, l = this.wipClass.lines.length; i < l; i++) {
       line = this.wipClass.lines[i];
@@ -66,13 +68,7 @@ export class ActionParser {
           Patterns.IMPORT.lastIndex = 0;
           result = Patterns.IMPORT.exec(line);
           if (result) {
-            fullType = result[1];
-            shortType = ActionContext.fullTypeToShortType(fullType);
-            if (shortType === '*') {
-              this.wipClass.registerWildcardImport(fullType);
-            } else {
-              this.wipClass.registerRegularImport(fullType, shortType);
-            }
+            imports.push(result[1]);
             break;
           }
           
@@ -145,19 +141,29 @@ export class ActionParser {
             
             if (isConstructor) {
               this.wipClass.constructorMethod = method;
-            }// else {
+            }
             this.wipClass.registerMember(method);
-            // }
             
             i += methodLength;
             break;
           }
           
           break;
-          
       }
     }
+    
     this.wipClass.setupSelfReferences();
+    
+    //Register imports and parse external files
+    imports.forEach(fullType => {
+      shortType = ActionContext.fullTypeToShortType(fullType);
+      if (shortType === '*') {
+        this.wipClass.registerWildcardImport(fullType);
+      } else {
+        this.wipClass.registerRegularImport(fullType, shortType);
+      }
+    });
+    
     return this.wipClass;
   }
   
