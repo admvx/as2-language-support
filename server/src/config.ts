@@ -27,8 +27,8 @@ setConsole(console);
 export function logIt(logConfig: { level: LogLevel, message: any } | any, ...rest: any[]) {
   if (ActionConfig.LOG_LEVEL === LogLevel.NONE) return;
   
-  let value: any = logConfig.level ? logConfig.message : Array.prototype.join.call(arguments, ' ');
-  let level: LogLevel = logConfig.level || LogLevel.DEBUG;
+  let value: any = (logConfig && logConfig.level) ? logConfig.message : Array.prototype.join.call(arguments, ' ');
+  let level: LogLevel = (logConfig && logConfig.level) || LogLevel.DEBUG;
   
   if (ActionConfig.LOG_LEVEL > level) return;
   
