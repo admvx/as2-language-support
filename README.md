@@ -7,18 +7,17 @@ https://github.com/admvx/as2-language-support
 - LSP-based code completion
 - Intrinsic language features + local code parsing
 
-## Known issues
-- Look-up of imported classes requires the open vscode directory to match the class root
-- Method signature intellisense supports single-line cases only
-- Limited awareness of inline method definitions
-
 ## Coming soon
-- File handling improvements
 - Go-to / peek definition support
 - Contextual suggestion filtering
 - Performance improvements via WASM regex implementation
 
 ## Release Notes
+
+### 1.1.0
+- Removes the requirement that the active vscode workspace directory must match the root class-path of any open files
+- Improves handling of wildcard imports
+- Fixes bug where parse queue halts upon encountering a missing file
 
 ### 1.0.1
 Addresses the following issues:
