@@ -49,27 +49,25 @@ export class LoadQueue {
     return this._promiseMap[path] = this._chain = this._chain
       .then(() => this.executeLoad(path));
   }
-
+  
   private static executeLoad(path: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      fse.readFile(path)
-        .then(result => {
-          this.clearQueueItem(path);
-          resolve(result.toString());
-        })
-        .catch(err => {
-          this._naughtyList[path] = true;
-          this.clearQueueItem(path);
-          ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.ERROR, message: [`Could not load file at: '${path}'!`, err] });
-          reject(err);
-        });
-    });
+    return fse.readFile(path)
+      .then(result => {
+        this.clearQueueItem(path);
+        return result.toString();
+      })
+      .catch(err => {
+        this._naughtyList[path] = true;
+        this.clearQueueItem(path);
+        ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.ERROR, message: [`Could not load file at: '${path}'!`, err] });
+        return null;
+      });
   }
-
+  
   private static clearQueueItem(path: string): void {
-    this._promiseMap[path] = undefined;
+    delete this._promiseMap[path];
   }
-
+  
 }
 
 export async function loadString(path: string): Promise<string> {
