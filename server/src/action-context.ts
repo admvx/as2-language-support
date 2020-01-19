@@ -14,16 +14,13 @@ const stringMatcher = /(?:".*?"|'.*?'|["'].*?$)/g;                  //Matches st
 const braceMatcher = /(?:{(?:(?!{).)*?}|{(?:(?!{).)*?$)/g;          //Matches well paired braces (complete or open to end of string)
 const bracketMatcher = /(?:\[(?:(?!\[).)*?\]|\[(?:(?!\[).)*?$)/g;   //Matches well paired square brackets (complete or open to end of string)
 const matchedParens = /(?:\((?:(?!\().)*?\))/g;                     //Matches well paired parentheses
-const slashMatcher = /\//g;                                         //Matches forward slashes
-const asExtensionMatcher = /\.as$/i;                                //Matches strings ending in .as
 
 interface SymbolChainLink { identifier: string; called: boolean; }
 
 export class ActionContext {
   
-  public static rootPath: string = '';  //TODO: Need a more accurate value for this to avoid i/o errors when the vscode folder is not the class root
-  
   private static _classes: ActionClass[] = [];
+  private static _wildcardImports: { [path: string]: Promise<string[]> } = Object.create(null);
   private static _classLookup: { [fullTypeOrUri: string]: ActionClass } = Object.create(null);
   private static _intrinsicImports: { [shortType: string]: ActionClass } = Object.create(null);
   private static _globalCompletions: CompletionItem[] = [];
@@ -85,7 +82,7 @@ export class ActionContext {
           }
         }
         returnType = nextClass.importMap[returnType] || returnType;
-        nextClass = await this.getClassByFullType(returnType);
+        nextClass = await this.getClassByFullType(returnType, nextClass.baseUri);
         if (symbolCalled && nextClass.constructorMethod) {
           nextVisibility = VisibilityFilter.PUBLIC_INSTANCE;
         }
@@ -124,7 +121,7 @@ export class ActionContext {
     
     let member: ActionParameter;
     if (ambientClass.superClass && chainLength === 1 && symbolChain[0].identifier === 'super') {
-      let superClass = await this.getClassByFullType(ambientClass.superClass);
+      let superClass = await this.getClassByFullType(ambientClass.superClass, ambientClass.baseUri);
       member = superClass && superClass.constructorMethod;
     } else {  
       let memberAndClass = await this.traverseSymbolChainToMember(symbolChain, ambientClass, lineIndex);
@@ -247,7 +244,7 @@ export class ActionContext {
       symbolName = symbolChain[0].identifier;
       returnType = ambientClass.importMap[symbolName];
       if (returnType) {
-        return [null, await this.getClassByFullType(returnType)];
+        return [null, await this.getClassByFullType(returnType, ambientClass.baseUri)];
       } else if (this._intrinsicImports[symbolName]) {
         return [null, this._intrinsicImports[symbolName]];
       }
@@ -287,7 +284,7 @@ export class ActionContext {
           }
         }
         returnType = nextClass.importMap[returnType] || returnType;
-        nextClass = await this.getClassByFullType(returnType);
+        nextClass = await this.getClassByFullType(returnType, nextClass.baseUri);
         if (symbolCalled && nextClass.constructorMethod) {
           nextVisibility = VisibilityFilter.PUBLIC_INSTANCE;
         }
@@ -373,7 +370,7 @@ export class ActionContext {
     }
     
     if (actionClass.superClass) {
-      let superActionClass = await this.getClassByFullType(actionClass.superClass);
+      let superActionClass = await this.getClassByFullType(actionClass.superClass, actionClass.baseUri);
       if (superActionClass) {
         completionItems = completionItems.concat(await this.getInnerSymbols(superActionClass, visibilityFilter, null, false, skipMap, rank));
       }
@@ -451,27 +448,18 @@ export class ActionContext {
     this._classLookup[actionClass.fileUri] = actionClass;
   }
   
-  public static getClassByFullType(fullType: string): Thenable<ActionClass> {
-    if (! fullType) {
-      return Promise.resolve(null);
-    }
-    if (this._classLookup[fullType]) {
-      return Promise.resolve(this._classLookup[fullType]);
-    }
-    return this.requestClassParse(fullType);
-  }
-  
-  public static requestClassParse(fullType: string, forceReparse: boolean = false): Thenable<ActionClass> {
-    ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.INFO, message: `request class parse! ${fullType}` });
+  public static getClassByFullType(fullType: string, basePath: string, forceReparse = false): Thenable<ActionClass> {
+    ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Request class parse! ${fullType}` });
     
     if (fullType in this._classLookup && !forceReparse) {
       return Promise.resolve(this._classLookup[fullType]);
     } else {
-      let path = this.typeOrPackageToPath(fullType);
-      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.INFO, message: `Type to path: ${path}` });
+      let path = this.typeOrPackageToPath(fullType, basePath);
+      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Type to path: ${path}` });
       let promises: [PromiseLike<any>, Promise<string>] = [ActionParser.initialise(), LoadQueue.enqueue(path)];
       return Promise.all(promises)
         .then(res => {
+          if (! res) return null;
           let ac = ActionParser.parseFile(path, res[1]);
           this.registerClass(ac);
           return ac;
@@ -480,18 +468,22 @@ export class ActionContext {
     }
   }
   
-  public static requestPackageParse(packageDescriptor: string, forceReparse: boolean = false): Promise<string[]> {
-    return DirectoryUtility.fileNamesInDirectory(this.typeOrPackageToPath(packageDescriptor), /\.as$/i)
-      .then(fileNames => fileNames.map(fileName => {
-        let fullType = this.pathToFullType(fileName);
-        if (fullType && (forceReparse || !this._classLookup[fullType])) {
-          let path = this.typeOrPackageToPath(fullType);
-          LoadQueue.enqueue(path)
-            .then(contents => this.registerClass(ActionParser.parseFile(path, contents)))
-            .catch(e => ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.ERROR, message: `Load error! ${path} ${e}` }));
-        }
-        return fullType;
-      }));
+  public static requestPackageParse(packageDescriptor: string, basePath: string, forceReparse = false): Promise<string[]> {
+    let lookupKey = basePath + packageDescriptor;
+    if (!forceReparse && lookupKey in this._wildcardImports) {
+      return this._wildcardImports[lookupKey];
+    }
+    this._wildcardImports[lookupKey] = DirectoryUtility.fileNamesInDirectory(this.typeOrPackageToPath(packageDescriptor, basePath), /\.as$/i)
+      .then(fileNames => Promise.all(fileNames.map(fileName => {
+        return LoadQueue.enqueue(fileName)
+          .then(contents => {
+            if (! contents) return null;
+            let parsedClass = ActionParser.parseFile(fileName, contents);
+            this.registerClass(parsedClass);
+            return parsedClass.fullType;
+          });
+      })));
+    return this._wildcardImports[lookupKey];
   }
   
   public static fullTypeToPackage(fullType: string): string {
@@ -506,26 +498,14 @@ export class ActionContext {
     return rawType.indexOf('.') === -1;
   }
   
-  public static typeOrPackageToPath(typeDescriptor: string): string {
+  public static typeOrPackageToPath(typeDescriptor: string, basePath: string): string {
     let isPackage = this.fullTypeToShortType(typeDescriptor) === '*';
-    let path = DirectoryUtility.concatPaths(this.rootPath, DirectoryUtility.typeToPath(typeDescriptor));
+    let path = DirectoryUtility.concatPaths(basePath, DirectoryUtility.typeToPath(typeDescriptor));
     if (isPackage) {
       return path.substring(0, path.length-1);
     } else {
       return path + '.as';
     }
-  }
-  
-  public static pathToFullType(path: string): string {
-    if (path.indexOf(this.rootPath) !== 0) {
-      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.WARNING, message: `Can't determine type from path: '${path}' as it does not begin with the current rootPath: '${this.rootPath}'!` });
-      return '';
-    }
-    if (path.substr(-3).toLowerCase() !== '.as') {
-      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.WARNING, message: `Unexpected file extension in path '${path}'!` });
-      return '';
-    }
-    return path.substring(this.rootPath.length).replace(slashMatcher, '.').replace(asExtensionMatcher, '');
   }
   
 }

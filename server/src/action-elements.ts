@@ -1,12 +1,14 @@
 import { ActionContext } from './action-context';
 import { logIt, LogLevel, ActionConfig } from './config';
 import { SignatureInformation } from 'vscode-languageserver';
+import { DirectoryUtility } from './file-system-utilities';
 
 export class ActionClass {
   
   public shortType: string;
   public fullType: string;
   public fileUri: string;
+  public baseUri: string;
   public isIntrinsic: boolean;
   public superClass: string;
   public parentPackage: string;
@@ -60,17 +62,23 @@ export class ActionClass {
     }
   }
   
-  public registerRegularImport(fullType: string, shortType?: string): void {
+  public registerRegularImport(fullType: string, shortType?: string, skipParse?: boolean): void {
     shortType = shortType || ActionContext.fullTypeToShortType(fullType);
     this._imports.push(fullType);
     this._importMap[shortType] = fullType;
-    ActionContext.requestClassParse(fullType);
+    if (! skipParse) {
+      ActionContext.getClassByFullType(fullType, this.baseUri, false);
+    }
   }
   
   public registerWildcardImport(wildcardImport: string): void {
     this._wildcardImports.push(wildcardImport);
-    ActionContext.requestPackageParse(wildcardImport)
-      .then(packageMembers => packageMembers.forEach(fullType => this.registerRegularImport(fullType)));
+    ActionContext.requestPackageParse(wildcardImport, this.baseUri, false)
+      .then(packageMembers => packageMembers.forEach(importType => {
+        if (importType && importType !== this.fullType) {
+          this.registerRegularImport(importType, null, true);
+        }
+      }));
   }
   
   public getMemberByName(memberName: string, filter: VisibilityFilter = VisibilityFilter.PUBLIC_INSTANCE, lineNumber: number = null): PromiseLike<ActionParameter> {
@@ -103,7 +111,7 @@ export class ActionClass {
     if (lookup[memberName]) {
       return Promise.resolve(lookup[memberName]);
     } else if (this.superClass) {
-      return ActionContext.getClassByFullType(this.superClass)
+      return ActionContext.getClassByFullType(this.superClass, this.baseUri, false)
         .then(parsedSuperClass => parsedSuperClass && parsedSuperClass.getMemberByName(memberName, filter));
     }
     return null;
@@ -146,6 +154,7 @@ export class ActionClass {
       });
     }
     this._importMap[this.shortType] = this.fullType;
+    this.baseUri = DirectoryUtility.fileUriAndTypeToBaseUri(this.fileUri, this.fullType);
   }
   
   public get publicMembers(): ActionParameter[] { return this._publicInstanceMembers; }
