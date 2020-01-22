@@ -4,8 +4,9 @@ import { LogLevel, logIt, ActionConfig } from './config';
 
 export class DirectoryUtility {
 
-  public static fileNamesInDirectory(directoryPath: string, fileNameFilter?: RegExp, includePathInResults: boolean = true): Promise<string[]> {
-    return fse.readdir(URI.parse(directoryPath).fsPath)
+  public static fileNamesInDirectory(directoryPath: string, fileNameFilter?: RegExp, includePathInResults: boolean = true, pathIsUri: boolean = true): Promise<string[]> {
+    directoryPath = pathIsUri ? URI.parse(directoryPath).fsPath : directoryPath;
+    return fse.readdir(directoryPath)
       .then(fileNames => {
         if (fileNameFilter) {
           fileNames = fileNames.filter(fileName => fileName.match(fileNameFilter));
@@ -52,8 +53,8 @@ export class LoadQueue {
   private static _chain: Promise<string> = Promise.resolve('');
   private static _naughtyList: { [path: string]: boolean } = { };
 
-  public static enqueue(pathUri: string): Promise<string> {
-    let filePath = URI.parse(pathUri).fsPath;
+  public static enqueue(filePath: string, pathIsUri: boolean = true): Promise<string> {
+    filePath = pathIsUri ? URI.parse(filePath).fsPath : filePath;
     
     if (this._naughtyList[filePath]) {
       ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.WARNING, message: `Already tried to load ${filePath} and failed. Aborting.` });

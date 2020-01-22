@@ -185,7 +185,7 @@ export class ActionClass {
     return description;
   }
   
-  public toIntrinsicPickle(): string {
+  public toPickle(): string {
     this._members.forEach(member => delete member.description);
     return JSON.stringify(<PickledClass>{
       shortType: this.shortType,

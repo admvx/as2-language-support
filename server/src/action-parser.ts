@@ -48,16 +48,17 @@ export class ActionParser {
   
   public instanceTest(): void { }
   
-  public static parseFile(fileUri: string, fileContent: string, deep: boolean = false): ActionClass {
+  public static parseFile(fileUri: string, fileContent: string, deep: boolean = false, isIntrinsic: boolean = false): ActionClass {
     let fullType: string, shortType: string, superClass: string, result: RegExpExecArray, line: string;
     
     fileContent = stripComments(fileContent);
     
     this.wipClass = new ActionClass();
     this.wipClass.fileUri = fileUri;
+    this.wipClass.isIntrinsic = isIntrinsic;
     this.wipClass.lines = fileContent.split(/\r?\n/);
     
-    let includeLocations: boolean = !! fileUri;
+    let includeLocations: boolean = !isIntrinsic && !! fileUri;
     let imports: string[] = [];
     
     let scopeStack: ActionScope[] = [ActionScope.BASE];
