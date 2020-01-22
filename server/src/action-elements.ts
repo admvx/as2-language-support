@@ -112,7 +112,7 @@ export class ActionClass {
     if (lookup[memberName]) {
       return Promise.resolve(lookup[memberName]);
     } else if (this.superClass) {
-      return ActionContext.getClassByFullType(this.superClass, this.baseUri, false)
+      return ActionContext.getClassByFullType(this.importMap[this.superClass] || this.superClass, this.baseUri, false)
         .then(parsedSuperClass => parsedSuperClass && parsedSuperClass.getMemberByName(memberName, filter));
     }
     return null;
@@ -185,7 +185,7 @@ export class ActionClass {
     return description;
   }
   
-  public toIntrinsicPickle(): string {
+  public toPickle(): string {
     this._members.forEach(member => delete member.description);
     return JSON.stringify(<PickledClass>{
       shortType: this.shortType,

@@ -32,11 +32,12 @@ const Patterns = {
   STATIC: /\bstatic\b/,
   METHOD: /(\bfunction\s+)([\w$]+)(\s*\()(.*)\)(?:\s*:\s*([\w$\.]+))?/, //Group 2: method name; group 4 (optional): arg list; group 5 (optional): return type
   IDENTIFIER_AND_TYPE: /(\s*)([\w$]+)(\s*)(?:\:\s*([\w$\.]+)\s*)?/,     //Group 2: var/argument name; group 4 (optional): type
-  LOCAL_VARS: /(\bvar\b)([\s\w$:,=.\[\]()-+*/]+)/,                      //Group 2: content
+  LOCAL_VARS: /(\bvar\b)([\s\w$:,=.\[\]()-+*/"']+)/,                    //Group 2: content
   BRACES: /[{}]/g,
   MATCHED_BRACES: /{(?:(?!{).)*?}/g,
   MATCHED_BRACKETS: /\[(?:(?!\[).)*?\]/g,
-  MATCHED_PARENS: /\((?:(?!\().)*?\)/g
+  MATCHED_PARENS: /\((?:(?!\().)*?\)/g,
+  MATCHED_STRINGS: /(?:".*?"|'.*?')/g
 };
 
 export class ActionParser {
@@ -48,16 +49,17 @@ export class ActionParser {
   
   public instanceTest(): void { }
   
-  public static parseFile(fileUri: string, fileContent: string, deep: boolean = false): ActionClass {
+  public static parseFile(fileUri: string, fileContent: string, deep: boolean = false, isIntrinsic: boolean = false): ActionClass {
     let fullType: string, shortType: string, superClass: string, result: RegExpExecArray, line: string;
     
     fileContent = stripComments(fileContent);
     
     this.wipClass = new ActionClass();
     this.wipClass.fileUri = fileUri;
+    this.wipClass.isIntrinsic = isIntrinsic;
     this.wipClass.lines = fileContent.split(/\r?\n/);
     
-    let includeLocations: boolean = !! fileUri;
+    let includeLocations: boolean = !isIntrinsic && !! fileUri;
     let imports: string[] = [];
     
     let scopeStack: ActionScope[] = [ActionScope.BASE];
@@ -245,6 +247,7 @@ export class ActionParser {
           let localString = recursiveReplaceAndPreserveLength(result[2], Patterns.MATCHED_BRACES);
           localString = recursiveReplaceAndPreserveLength(localString, Patterns.MATCHED_BRACKETS);
           localString = recursiveReplaceAndPreserveLength(localString, Patterns.MATCHED_PARENS);
+          localString = recursiveReplaceAndPreserveLength(localString, Patterns.MATCHED_STRINGS);
           locals = locals.concat(this.getParameterArrayFromString(localString, false, includeLocations, lineNumber + lineCount, result.index + result[1].length));
         }
       }

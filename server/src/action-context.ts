@@ -121,7 +121,7 @@ export class ActionContext {
     
     let member: ActionParameter;
     if (ambientClass.superClass && chainLength === 1 && symbolChain[0].identifier === 'super') {
-      let superClass = await this.getClassByFullType(ambientClass.superClass, ambientClass.baseUri);
+      let superClass = await this.getClassByFullType(ambientClass.importMap[ambientClass.superClass] || ambientClass.superClass, ambientClass.baseUri);
       member = superClass && superClass.constructorMethod;
     } else {  
       let memberAndClass = await this.traverseSymbolChainToMember(symbolChain, ambientClass, lineIndex);
@@ -411,7 +411,7 @@ export class ActionContext {
     }
     
     if (actionClass.superClass) {
-      let superActionClass = await this.getClassByFullType(actionClass.superClass, actionClass.baseUri);
+      let superActionClass = await this.getClassByFullType(actionClass.importMap[actionClass.superClass] || actionClass.superClass, actionClass.baseUri);
       if (superActionClass) {
         completionItems = completionItems.concat(await this.getInnerSymbols(superActionClass, visibilityFilter, null, false, skipMap, rank));
       }

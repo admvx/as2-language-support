@@ -33,7 +33,7 @@ ActionParser.initialise()
     documents.onDidOpen((evt) => {
       let actionClass = ActionParser.parseFile(evt.document.uri, evt.document.getText(), true);
       ActionContext.registerClass(actionClass);
-      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: actionClass.toIntrinsicPickle() });
+      ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: actionClass.toPickle() });
     });
     documents.onDidChangeContent(change => ActionContext.registerClass(ActionParser.parseFile(change.document.uri, change.document.getText(), true)));
     connection.onCompletion((docPos, token) => ActionContext.getCompletions(docPos, token));

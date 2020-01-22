@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git@github.com:admvx/as2-language-support.git"
   },
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Adam Vernon",
   "publisher": "admvx",
   "icon": "icon.png",
