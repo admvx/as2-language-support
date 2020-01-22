@@ -13,6 +13,12 @@ https://github.com/admvx/as2-language-support
 
 ## Release Notes
 
+### 1.2.1
+Addresses the following issues:
+- Superclass members are not resolved when super declaration uses short type
+- Local variables declared after string literals in the same statement are not indexed
+- Npm task `parse-intrinsics` no longer runs successfully
+
 ### 1.2.0
 Add definition support (jump to definition, peek definition)
 
