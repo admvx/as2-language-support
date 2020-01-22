@@ -1,6 +1,6 @@
 import { ActionContext } from './action-context';
 import { logIt, LogLevel, ActionConfig } from './config';
-import { SignatureInformation } from 'vscode-languageserver';
+import { SignatureInformation, Range } from 'vscode-languageserver';
 import { DirectoryUtility } from './file-system-utilities';
 
 export class ActionClass {
@@ -14,6 +14,7 @@ export class ActionClass {
   public parentPackage: string;
   public lines: string[];
   public constructorMethod: ActionMethod;
+  public locationRange: Range;
   
   private _description: string;
   private _memberLookup: { [propName: string]: ActionParameter } = Object.create(null);
@@ -194,6 +195,8 @@ export class ActionClass {
       parentPackage: this.parentPackage,
       _imports: this._imports,
       _members: this._members.filter(member => member.name !== 'this' && member.name !== 'super')
+    }, (key, value) => {
+      if (key !== 'owningClass') return value;  //Skip this property to avoid circular references
     });
   }
   
@@ -235,14 +238,15 @@ export interface PickledClass {
   _members: (ActionParameter|ActionMethod)[];
 }
 
-//Method + constructor params; function-scoped vars
+//Class properties; method + constructor params; function-scoped vars
 export interface ActionParameter {
   name: string;
   returnType?: string;
-  owner?: string;
+  owningClass?: ActionClass;
   isInline?: boolean;
   isArgument?: boolean;
   documentation?: string;
+  locationRange?: Range;
   description?: string; //Should be present on all but only after instantiation
   isPublic?: boolean;
   isStatic?: boolean;
@@ -251,7 +255,7 @@ export interface ActionParameter {
   isGlobal?: boolean;
 }
 
-//Class level properties
+//Class methods
 export interface ActionMethod extends ActionParameter {
   isMethod: true;
   isConstructor: boolean;

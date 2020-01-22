@@ -20,7 +20,8 @@ connection.onInitialize((params) => {
       textDocumentSync: documents.syncKind,
       completionProvider: { resolveProvider: false, triggerCharacters: ['.'] },
       signatureHelpProvider: { triggerCharacters: ['(', ','] },
-      hoverProvider: true
+      hoverProvider: true,
+      definitionProvider: true
     }
   };
 });
@@ -37,5 +38,6 @@ ActionParser.initialise()
     documents.onDidChangeContent(change => ActionContext.registerClass(ActionParser.parseFile(change.document.uri, change.document.getText(), true)));
     connection.onCompletion((docPos, token) => ActionContext.getCompletions(docPos, token));
     connection.onSignatureHelp((docPos, token) => ActionContext.getSignatureHelp(docPos, token));
-    connection.onHover((docPos) => ActionContext.getHoverInfo(docPos));
+    connection.onHover(docPos => ActionContext.getHoverInfo(docPos));
+    connection.onDefinition(docPos => ActionContext.getDefinition(docPos));
   });

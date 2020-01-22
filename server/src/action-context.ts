@@ -3,7 +3,7 @@ import { classAmbients, methodAmbients, generalAmbients } from './ambient-symbol
 import { ActionParser, recursiveReplace } from './action-parser';
 import { LoadQueue, DirectoryUtility } from './file-system-utilities';
 import { logIt, LogLevel, ActionConfig } from './config';
-import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover, Location } from 'vscode-languageserver';
 
 //TODO: use onigasm for regex instead
 const tokenSplitter = /([\w\$]+)/g;                                 //Captures symbol names
@@ -29,7 +29,7 @@ export class ActionContext {
   //--Completions--//
   //---------------//
   public static async getCompletions(textDocumentPosition: CompletionParams, cancellationToken: CancellationToken): Promise<CompletionItem[]> {
-    ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Hooray: ${JSON.stringify(textDocumentPosition)}` });
+    ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Completion request: ${JSON.stringify(textDocumentPosition)}` });
     
     let parsedClass = this._classLookup[textDocumentPosition.textDocument.uri];
     if (! parsedClass) return [];
@@ -180,6 +180,47 @@ export class ActionContext {
         language: 'actionscript',
         value: member.description
       }
+    };
+  }
+  
+  public static async getDefinition(textDocumentPosition: TextDocumentPositionParams): Promise<Location> {
+    ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Get definition: ${JSON.stringify(textDocumentPosition)}` });
+    
+    let ambientClass = this._classLookup[textDocumentPosition.textDocument.uri];
+    if (! ambientClass) return null;
+    
+    let lineIndex = textDocumentPosition.position.line;
+    let charIndex = textDocumentPosition.position.character;
+    let fullLine = ambientClass.lines[lineIndex];
+    if (!fullLine.charAt(charIndex).match(symbolMatcher)) charIndex --;
+    if (!fullLine.charAt(charIndex).match(symbolMatcher)) return null;
+    
+    let line = fullLine.substr(0, charIndex + 1).trim();
+    if (this.positionInsideStringLiteral(line)) return null;
+    
+    firstSymbolMatcher.lastIndex = 0;
+    let result = firstSymbolMatcher.exec(fullLine.substr(charIndex + 1));
+    if (result) {
+      line += result[1];
+    }
+    
+    let symbolChain = this.getSymbolChainFromLine(line);
+    let memberAndClass = await this.traverseSymbolChainToMember(symbolChain, ambientClass, lineIndex, true);
+    let member = memberAndClass && memberAndClass[0];
+    let actionClass = memberAndClass && memberAndClass[1];
+    if (! member) {
+      if (!actionClass || !actionClass.fileUri || !actionClass.locationRange) return null;
+      return {
+        uri: actionClass.fileUri,
+        range: actionClass.locationRange
+      };
+    }
+    
+    if (!member.owningClass || !member.owningClass.fileUri || !member.locationRange) return null;
+    
+    return {
+      uri: member.owningClass.fileUri,
+      range: member.locationRange
     };
   }
   
