@@ -4,15 +4,17 @@ https://github.com/admvx/as2-language-support
 
 ## Features
 - Syntax highlighting for ActionScript 2.0 (`*.as`)
-- LSP-based code completion
+- LSP-based assistance with the following features:
+  - Completion
+  - Hover info
+  - Method signatures
+  - Definition resolution (jump to definition, peek definition)
 - Intrinsic language features + local code parsing
 
-## Coming soon
-- Go-to / peek definition support
-- Contextual suggestion filtering
-- Performance improvements via WASM regex implementation
-
 ## Release Notes
+
+### 1.2.0
+Add definition support (jump to definition, peek definition)
 
 ### 1.1.0
 - Removes the requirement that the active vscode workspace directory must match the root class-path of any open files
