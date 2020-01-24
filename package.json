@@ -4,9 +4,9 @@
   "description": "Syntax highlighting and intellisense for ActionScript 2.0 in Visual Studio Code via the LSP protocol",
   "repository": {
     "type": "git",
-    "url": "git@github.com:admvx/as2-language-support.git"
+    "url": "https://github.com/admvx/as2-language-support"
   },
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "Adam Vernon",
   "publisher": "admvx",
   "icon": "icon.png",

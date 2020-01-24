@@ -13,6 +13,9 @@ https://github.com/admvx/as2-language-support
 
 ## Release Notes
 
+### 1.2.2
+Update format of repository url in `package.json`
+
 ### 1.2.1
 Addresses the following issues:
 - Superclass members are not resolved when super declaration uses short type
