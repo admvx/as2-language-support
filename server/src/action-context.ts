@@ -100,18 +100,25 @@ export class ActionContext {
     if (! ambientClass) return null;
     
     let lineIndex = textDocumentPosition.position.line;
-    let line = ambientClass.lines[lineIndex].substr(0, textDocumentPosition.position.character).trim().replace(stringMatcher, '');
-    let noMatchedParens = recursiveReplace(line, matchedParens);
-    let callBoundary = noMatchedParens.lastIndexOf('(');
-    if (callBoundary === -1) return null;
+    let line = ambientClass.lines[lineIndex].substr(0, textDocumentPosition.position.character).trim();
+    line = line.replace(stringMatcher, '');
+    line = line.replace(braceMatcher, '');
+    line = line.replace(bracketMatcher, '');
     
-    line = recursiveReplace(line, matchedParens, '()');
-    callBoundary = line.lastIndexOf('(');
-    let callOuter = line.substr(0, callBoundary);
-    let callInner = line.substr(callBoundary);
-    callInner = recursiveReplace(callInner, braceMatcher);
-    callInner = recursiveReplace(callInner, bracketMatcher);
-    let paramIndex = callInner.split(',').length - 1;
+    let charIndex = line.length - 1, unmatchedParentheses = 1, paramIndex = 0;
+    let char: string;
+    while (charIndex >= 0) {
+      char = line.charAt(charIndex);
+      if (char === '(') unmatchedParentheses --;
+      else if (char === ')') unmatchedParentheses ++;
+      else if (unmatchedParentheses === 1 && char === ',') paramIndex ++;
+      if (unmatchedParentheses === 0) break;
+      charIndex --;
+    }
+    if (unmatchedParentheses > 0) return null;
+    
+    let callOuter = line.substring(0, charIndex);
+    callOuter = recursiveReplace(callOuter, matchedParens, '()');
     let symbolChain = this.getSymbolChainFromLine(callOuter);
     let chainLength = symbolChain.length;
     
