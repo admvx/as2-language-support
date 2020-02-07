@@ -13,6 +13,9 @@ https://github.com/admvx/as2-language-support
 
 ## Release Notes
 
+### 1.2.3
+Fix bug with tracking of nested method signatures
+
 ### 1.2.2
 Update format of repository url in `package.json`
 
