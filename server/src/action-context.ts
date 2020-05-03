@@ -11,9 +11,9 @@ const symbolMatcher = /[\w\$]+/g;                                   //Like above
 const firstSymbolMatcher = /(^[\w\$]+)/;                            //Like above but from start of string only
 const ambientValidator = /(?:^|\(|\[|,)\s*[\w\$]+$/g;               //Matches strings that end with an ambient symbol; fails for sub properties – ...hopefully
 const stringMatcher = /(?:".*?"|'.*?'|["'].*?$)/g;                  //Matches string literals (complete or open to end of string)
-const braceMatcher = /(?:{(?:(?!{).)*?}|{(?:(?!{).)*?$)/g;          //Matches well paired braces (complete or open to end of string)
-const bracketMatcher = /(?:\[(?:(?!\[).)*?\]|\[(?:(?!\[).)*?$)/g;   //Matches well paired square brackets (complete or open to end of string)
-const matchedParens = /(?:\((?:(?!\().)*?\))/g;                     //Matches well paired parentheses
+const braceMatcher = /{(?:(?!{).)*?}/g;                             //Matches well paired braces
+const bracketMatcher = /\[(?:(?!\[).)*?\]/g;                        //Matches well paired square brackets
+const matchedParens = /\((?:(?!\().)*?\)/g;                         //Matches well paired parentheses
 
 interface SymbolChainLink { identifier: string; called: boolean; }
 
@@ -109,7 +109,8 @@ export class ActionContext {
     let char: string;
     while (charIndex >= 0) {
       char = line.charAt(charIndex);
-      if (char === '(') unmatchedParentheses --;
+      if (char === '[' || char === '{') paramIndex = 0;
+      else if (char === '(') unmatchedParentheses --;
       else if (char === ')') unmatchedParentheses ++;
       else if (unmatchedParentheses === 1 && char === ',') paramIndex ++;
       if (unmatchedParentheses === 0) break;
