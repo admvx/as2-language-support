@@ -6,14 +6,15 @@ import { logIt, LogLevel, ActionConfig } from './config';
 import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover, Location } from 'vscode-languageserver';
 
 //TODO: use onigasm for regex instead
-const tokenSplitter = /([\w\$]+)/g;                                 //Captures symbol names
-const symbolMatcher = /[\w\$]+/g;                                   //Like above but non-capturing
-const firstSymbolMatcher = /(^[\w\$]+)/;                            //Like above but from start of string only
-const ambientValidator = /(?:^|\(|\[|,)\s*[\w\$]+$/g;               //Matches strings that end with an ambient symbol; fails for sub properties – ...hopefully
-const stringMatcher = /(?:".*?"|'.*?'|["'].*?$)/g;                  //Matches string literals (complete or open to end of string)
-const braceMatcher = /{(?:(?!{).)*?}/g;                             //Matches well paired braces
-const bracketMatcher = /\[(?:(?!\[).)*?\]/g;                        //Matches well paired square brackets
-const matchedParens = /\((?:(?!\().)*?\)/g;                         //Matches well paired parentheses
+const tokenSplitter = /([\w\$]+)/g;                     //Captures symbol names
+const symbolMatcher = /[\w\$]+/g;                       //Like above but non-capturing
+const firstSymbolMatcher = /(^[\w\$]+)/;                //Like above but from start of string only
+const ambientValidator = /(?:^|\(|\[|,)\s*[\w\$]+$/g;   //Matches strings that end with an ambient symbol; fails for sub properties – ...hopefully
+const stringMatcher = /(?:".*?"|'.*?'|["'].*?$)/g;      //Matches string literals (complete or open to end of string)
+const braceMatcher = /{(?:(?!{).)*?}/g;                 //Matches well paired braces
+const bracketMatcher = /\[(?:(?!\[).)*?\]/g;            //Matches well paired square brackets
+const matchedParens = /\((?:(?!\().)*?\)/g;             //Matches well paired parentheses
+const importLineMatcher = /(\bimport\s+)([\w$\.\*]+)/;  //Finds import statements (group 1: preamble, group 2: fully qualified class)
 
 interface SymbolChainLink { identifier: string; called: boolean; }
 
@@ -158,6 +159,16 @@ export class ActionContext {
     let fullLine = ambientClass.lines[lineIndex];
     if (!fullLine.charAt(charIndex).match(symbolMatcher)) return null;
     
+    let importedClass = await this.retrieveImportAtLine(fullLine, ambientClass, charIndex);
+    if (importedClass) {
+      return {
+        contents: {
+          language: 'actionscript',
+          value: importedClass.description
+        }
+      };
+    }
+    
     let line = fullLine.substr(0, charIndex + 1).trim();
     if (this.positionInsideStringLiteral(line)) return null;
     
@@ -202,6 +213,14 @@ export class ActionContext {
     let fullLine = ambientClass.lines[lineIndex];
     if (!fullLine.charAt(charIndex).match(symbolMatcher)) charIndex --;
     if (!fullLine.charAt(charIndex).match(symbolMatcher)) return null;
+    
+    let importedClass = await this.retrieveImportAtLine(fullLine, ambientClass, charIndex);
+    if (importedClass) {
+      return {
+        uri: importedClass.fileUri,
+        range: importedClass.locationRange
+      };
+    }
     
     let line = fullLine.substr(0, charIndex + 1).trim();
     if (this.positionInsideStringLiteral(line)) return null;
@@ -264,6 +283,18 @@ export class ActionContext {
       symbolCalled = false;
     }
     return symbolChain;
+  }
+  
+  private static retrieveImportAtLine(line: string, ambientClass: ActionClass, cursorPos: number): Thenable<ActionClass> {
+    importLineMatcher.lastIndex = 0;
+    let result = importLineMatcher.exec(line);
+    if (!result) return null;
+
+    let preamble = result[1], className = result[2];
+    let startPos = result.index + preamble.length;
+    if (cursorPos < startPos || cursorPos > startPos + className.length) return null;
+
+    return this.getClassByFullType(className, ambientClass.baseUri);
   }
 
   private static spliceUpToMatch(tokens: string[], triggerChar: String, matchChar: String): void {
