@@ -15,6 +15,7 @@ const braceMatcher = /{(?:(?!{).)*?}/g;                 //Matches well paired br
 const bracketMatcher = /\[(?:(?!\[).)*?\]/g;            //Matches well paired square brackets
 const matchedParens = /\((?:(?!\().)*?\)/g;             //Matches well paired parentheses
 const importLineMatcher = /(\bimport\s+)([\w$\.\*]+)/;  //Finds import statements (group 1: preamble, group 2: fully qualified class)
+const superclassMatcher = /(\bextends\s+)([\w$\.\*]+)/; //Finds extends statements (group 1: preamble, group 2: class - possibly fully qualified)
 
 interface SymbolChainLink { identifier: string; called: boolean; }
 
@@ -159,12 +160,13 @@ export class ActionContext {
     let fullLine = ambientClass.lines[lineIndex];
     if (!fullLine.charAt(charIndex).match(symbolMatcher)) return null;
     
-    let importedClass = await this.retrieveImportAtLine(fullLine, ambientClass, charIndex);
-    if (importedClass) {
+    let externalClass = await this.retrieveImportAtLine(fullLine, ambientClass, charIndex);
+    if (! externalClass) externalClass = await this.retrieveSuperclassAtLine(fullLine, ambientClass, charIndex);
+    if (externalClass) {
       return {
         contents: {
           language: 'actionscript',
-          value: importedClass.description
+          value: externalClass.description
         }
       };
     }
@@ -214,11 +216,12 @@ export class ActionContext {
     if (!fullLine.charAt(charIndex).match(symbolMatcher)) charIndex --;
     if (!fullLine.charAt(charIndex).match(symbolMatcher)) return null;
     
-    let importedClass = await this.retrieveImportAtLine(fullLine, ambientClass, charIndex);
-    if (importedClass) {
+    let externalClass = await this.retrieveImportAtLine(fullLine, ambientClass, charIndex);
+    if (! externalClass) externalClass = await this.retrieveSuperclassAtLine(fullLine, ambientClass, charIndex);
+    if (externalClass) {
       return {
-        uri: importedClass.fileUri,
-        range: importedClass.locationRange
+        uri: externalClass.fileUri,
+        range: externalClass.locationRange
       };
     }
     
@@ -288,6 +291,18 @@ export class ActionContext {
   private static retrieveImportAtLine(line: string, ambientClass: ActionClass, cursorPos: number): Thenable<ActionClass> {
     importLineMatcher.lastIndex = 0;
     let result = importLineMatcher.exec(line);
+    if (!result) return null;
+
+    let preamble = result[1], className = result[2];
+    let startPos = result.index + preamble.length;
+    if (cursorPos < startPos || cursorPos > startPos + className.length) return null;
+
+    return this.getClassByFullType(className, ambientClass.baseUri);
+  }
+  
+  private static retrieveSuperclassAtLine(line: string, ambientClass: ActionClass, cursorPos: number): Thenable<ActionClass> {
+    superclassMatcher.lastIndex = 0;
+    let result = superclassMatcher.exec(line);
     if (!result) return null;
 
     let preamble = result[1], className = result[2];
