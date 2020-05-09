@@ -53,12 +53,12 @@
     "clear-deps": "rm -f package-lock.json && rm -rf node_modules && rm -f client/package-lock.json && rm -rf client/node_modules && rm -f server/package-lock.json && rm -rf server/node_modules"
   },
   "devDependencies": {
-    "@types/node": "^13.0.0",
+    "@types/node": "^13.13.5",
     "merge-options": "^2.0.0",
-    "ts-loader": "^6.2.1",
-    "tslint": "^5.20.1",
-    "typescript": "^3.7.4",
-    "webpack": "^4.41.4",
-    "webpack-cli": "^3.3.10"
+    "ts-loader": "^7.0.3",
+    "eslint": "^7.0.0",
+    "typescript": "^3.8.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   }
 }

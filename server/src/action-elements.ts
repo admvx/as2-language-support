@@ -82,13 +82,13 @@ export class ActionClass {
       }));
   }
   
-  public getMemberByName(memberName: string, filter: VisibilityFilter = VisibilityFilter.PUBLIC_INSTANCE, lineNumber: number = null): PromiseLike<ActionParameter> {
+  public getMemberByName(memberName: string, filter: VisibilityFilter = VisibilityFilter.PUBLIC_INSTANCE, lineNumber: number = null): PromiseLike<[ActionParameter, ActionClass]> {
     if (lineNumber !== null) {
       let method = this.getMethodAt(lineNumber);
       if (method) {
         for (let i = 0, l = method.scopedMembers.length; i < l; i++) {
           ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.WARNING, message: `Comparing ${method.scopedMembers[i].name} to ${memberName}` });
-          if (memberName === method.scopedMembers[i].name) return Promise.resolve(method.scopedMembers[i]);
+          if (memberName === method.scopedMembers[i].name) return Promise.resolve([method.scopedMembers[i], this]);
         }
       }
     }
@@ -110,7 +110,7 @@ export class ActionClass {
         break;
     }
     if (lookup[memberName]) {
-      return Promise.resolve(lookup[memberName]);
+      return Promise.resolve([lookup[memberName], this]);
     } else if (this.superClass) {
       return ActionContext.getClassByFullType(this.importMap[this.superClass] || this.superClass, this.baseUri, false)
         .then(parsedSuperClass => parsedSuperClass && parsedSuperClass.getMemberByName(memberName, filter));
