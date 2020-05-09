@@ -63,7 +63,7 @@ export class ActionContext {
         }
         try {
           isThisOrSuper = symbolName === 'this' || symbolName === 'super';
-          member = await nextClass.getMemberByName(symbolName, nextVisibility, i === 0 ? lineIndex : null);
+          [member, nextClass] = await nextClass.getMemberByName(symbolName, nextVisibility, i === 0 ? lineIndex : null);
           if (member.isConstructor) throw new Error('Do not want constructor');
           nextVisibility = isThisOrSuper ? VisibilityFilter.ALL_INSTANCE : VisibilityFilter.PUBLIC_INSTANCE;
           returnType = member.returnType;
@@ -73,7 +73,8 @@ export class ActionContext {
         } catch {
           if (i === 0) {
             try {
-              returnType = (await this._globalClass.getMemberByName(symbolName, VisibilityFilter.EVERYTHING)).returnType;
+              [member, nextClass] = await this._globalClass.getMemberByName(symbolName, VisibilityFilter.EVERYTHING);
+              returnType = member.returnType;
               nextVisibility = VisibilityFilter.PUBLIC_INSTANCE;
             } catch {
               returnType = symbolName;
@@ -351,7 +352,7 @@ export class ActionContext {
         symbolCalled = symbolChain[i].called;
         isThisOrSuper = symbolName === 'this' || symbolName === 'super';
         try {
-          member = await nextClass.getMemberByName(symbolName, nextVisibility, i === 0 ? lineIndex : null);
+          [member, nextClass] = await nextClass.getMemberByName(symbolName, nextVisibility, i === 0 ? lineIndex : null);
           if (member.isConstructor) throw new Error('Do not want constructor');
           nextVisibility = isThisOrSuper ? VisibilityFilter.ALL_INSTANCE : VisibilityFilter.PUBLIC_INSTANCE;
           returnType = member.returnType;
@@ -364,7 +365,7 @@ export class ActionContext {
         } catch {
           if (i === 0) {
             try {
-              member = await this._globalClass.getMemberByName(symbolName, VisibilityFilter.EVERYTHING);
+              [member, nextClass] = await this._globalClass.getMemberByName(symbolName, VisibilityFilter.EVERYTHING);
               nextVisibility = VisibilityFilter.PUBLIC_INSTANCE;
               returnType = member.returnType;
               if (i === l - 1) {
