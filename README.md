@@ -13,9 +13,13 @@ https://github.com/admvx/as2-language-support
 
 ## Release Notes
 
+### 1.3.1
+- Refresh dependencies and packages to match canonical vscode-lsp extension example
+- Fix superclass member completion bug
+
 ### 1.3.0
-- Adds hover and definition support for long-form class references ('import' and 'extends' statements)
-- Fixes method signature identification inside array and object literals
+- Add hover and definition support for long-form class references ('import' and 'extends' statements)
+- Fix method signature identification inside array and object literals
 
 ### 1.2.3
 Fix bug with tracking of nested method signatures
