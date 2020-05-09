@@ -11,11 +11,12 @@
     "parse-intrinsics": "ts-node ./src/scripts/parse-intrinsics.ts > ./src/intrinsic-pickles.ts"
   },
   "devDependencies": {
-    "@types/fs-extra": "^8.0.1",
-    "fs-extra": "8.1.0",
+    "@types/fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.0",
     "monaco-textmate": "^3.0.1",
     "onigasm": "^2.2.4",
-    "vscode-languageserver": "5.3.0-next.10",
+    "vscode-languageserver": "^6.1.1",
+    "vscode-languageserver-textdocument": "^1.0.1",
     "vscode-uri": "^2.1.1"
   }
 }
