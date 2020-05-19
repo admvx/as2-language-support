@@ -2,6 +2,11 @@
 
 Updates to the AS2 Language Support project will be documented here as new versions are released.
 
+## [1.3.2](https://github.com/admvx/as2-language-support/compare/v1.3.1...v1.3.2) - 2020-05-19
+- Add in missing methods to intrinsic classes to improve completions
+- Clean up formatting of intrinsic class files
+- Move release notes from readme into separate changelog file
+
 ## [1.3.1](https://github.com/admvx/as2-language-support/compare/v1.3.0...v1.3.1) - 2020-05-09
 - Refresh dependencies and packages to match canonical vscode-lsp extension example
 - Fix superclass member completion bug
