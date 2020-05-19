@@ -1,121 +1,118 @@
-class _global
-{
+class _global {
+  /* Lets you control screen reader accessibility options for SWF files, movie clips, buttons, dynamic text fields, and input text fields at runtime. */
+  public static var _accProps: Object;
 
-	/* Lets you control screen reader accessibility options for SWF files, movie clips, buttons, dynamic text fields, and input text fields at runtime. */
-	public static var _accProps: Object;
+  /* A reference to the global object that holds the core ActionScript classes, such as String, Object, Math, and Array. */
+  public static var _global: Object;
 
-	/* A reference to the global object that holds the core ActionScript classes, such as String, Object, Math, and Array. */
-	public static var _global: Object;
+  /* A reference to the root Timeline of _levelN. */
+  public static var _level0: MovieClip;
 
-	/* A reference to the root Timeline of _levelN. */
-	public static var _level0: MovieClip;
+  /* Specifies or returns a reference to the root movie clip Timeline. */
+  public static var _root: MovieClip;
 
-	/* Specifies or returns a reference to the root movie clip Timeline. */
-	public static var _root: MovieClip;
-	
-	/* An Array-like object accessible inside functions that contains the values of the arguments passed to that function. */
-	public static var arguments: FunctionArguments;
-	
-	/* Specifies the IEEE-754 value representing positive infinity. */
-	public static var Infinity: Number;
+  /* An Array-like object accessible inside functions that contains the values of the arguments passed to that function. */
+  public static var arguments: FunctionArguments;
 
-	/* Stops the setInterval() call. */
-	public static function clearInterval(intervalId: Number): Void { }
+  /* Specifies the IEEE-754 value representing positive infinity. */
+  public static var Infinity: Number;
 
-	/* Cancels a specified setTimeout() call. */
-	public static function clearTimeout(id: Number): Void { }
+  /* Stops the setInterval() call. */
+  public static function clearInterval(intervalId: Number): Void { }
 
-	/* Converts the parameter to a string and encodes it in a URL - encoded format, where all non-alphanumeric characters are replaced with % hexadecimal sequences. */
-	public static function escape(expression: String): String { }
+  /* Cancels a specified setTimeout() call. */
+  public static function clearTimeout(id: Number): Void { }
 
-	/* Accesses variables, properties, objects, or movie clips by name. */
-	public static function eval(expression): Object { }
+  /* Converts the parameter to a string and encodes it in a URL - encoded format, where all non-alphanumeric characters are replaced with % hexadecimal sequences. */
+  public static function escape(expression: String): String { }
 
-	/* Lets the SWF file communicate with either Flash Player or the program hosting Flash Player, such as a web browser. */
-	public static function fscommand(command: String, parameters: String): Void { }
+  /* Accesses variables, properties, objects, or movie clips by name. */
+  public static function eval(expression): Object { }
 
-	/* Returns the value of the specified property for the movie clip target. */
-	public static function getProperty(target: Object, property): Object { }
+  /* Lets the SWF file communicate with either Flash Player or the program hosting Flash Player, such as a web browser. */
+  public static function fscommand(command: String, parameters: String): Void { }
 
-	/* Returns the number of milliseconds that have elapsed since the SWF file started playing. */
-	public static function getTimer(): Number { }
+  /* Returns the value of the specified property for the movie clip target. */
+  public static function getProperty(target: Object, property): Object { }
 
-	/* Returns a string containing Flash Player version and platform information. */
-	public static function getVersion(): String { }
+  /* Returns the number of milliseconds that have elapsed since the SWF file started playing. */
+  public static function getTimer(): Number { }
 
-	/* Evaluates expression and returns true if it is a finite number or false if it is infinity or negative infinity. */
-	public static function isFinite(expression): Boolean { }
+  /* Returns a string containing Flash Player version and platform information. */
+  public static function getVersion(): String { }
 
-	/* Evaluates the parameter and returns true if the value is NaN(not a number).. */
-	public static function isNaN(expression): Boolean { }
+  /* Evaluates expression and returns true if it is a finite number or false if it is infinity or negative infinity. */
+  public static function isFinite(expression): Boolean { }
 
-	/* Loads a SWF or JPEG file into a level in Flash Player while the originally loaded SWF file plays. */
-	public static function loadMovieNum(url: String, level: Number, method: String): Void { }
+  /* Evaluates the parameter and returns true if the value is NaN(not a number).. */
+  public static function isNaN(expression): Boolean { }
 
-	/* Reads data from an external file, such as a text file or text generated by a ColdFusion, CGI script, ASP, PHP, or Perl script, and sets the values for variables in a Flash Player level. */
-	public static function loadVariablesNum(url: String, level: Number, method: String): Void { }
+  /* Loads a SWF or JPEG file into a level in Flash Player while the originally loaded SWF file plays. */
+  public static function loadMovieNum(url: String, level: Number, method: String): Void { }
 
-	/* Lets you issue Flash JavaScript API(JSAPI) commands from ActionScript. */
-	public static function MMExecute(command: String): String { }
+  /* Reads data from an external file, such as a text file or text generated by a ColdFusion, CGI script, ASP, PHP, or Perl script, and sets the values for variables in a Flash Player level. */
+  public static function loadVariablesNum(url: String, level: Number, method: String): Void { }
 
-	/* Sends the playhead to Frame 1 of the next scene. */
-	public static function nextScene(): Void { }
+  /* Lets you issue Flash JavaScript API(JSAPI) commands from ActionScript. */
+  public static function MMExecute(command: String): String { }
 
-	/* Specifies the mouse event or keypress that triggers an action. */
-	public static function on(mouseEvent: Object): Void { }
+  /* Sends the playhead to Frame 1 of the next scene. */
+  public static function nextScene(): Void { }
 
-	/* Triggers actions defined for a specific instance of a movie clip. */
-	public static function onClipEvent(movieEvent: Object): Void { }
+  /* Specifies the mouse event or keypress that triggers an action. */
+  public static function on(mouseEvent: Object): Void { }
 
-	/* Converts a string to a floating - point number. */
-	public static function parseFloat(string: String): Number { }
+  /* Triggers actions defined for a specific instance of a movie clip. */
+  public static function onClipEvent(movieEvent: Object): Void { }
 
-	/* Converts a string to an integer. */
-	public static function parseInt(expression: String, radix: Number): Number { }
+  /* Converts a string to a floating - point number. */
+  public static function parseFloat(string: String): Number { }
 
-	/* Sends the playhead to Frame 1 of the previous scene. */
-	public static function prevScene(): Void { }
+  /* Converts a string to an integer. */
+  public static function parseInt(expression: String, radix: Number): Number { }
 
-	/* Prints the target movie clip according to the boundaries specified in the parameter('bmovie', 'bmax', or 'bframe'). */
-	public static function print(target: Object, boundingBox: String): Void { }
+  /* Sends the playhead to Frame 1 of the previous scene. */
+  public static function prevScene(): Void { }
 
-	/* Prints the target movie clip as a bitmap according to the boundaries specified in the parameter('bmovie', 'bmax', or 'bframe'). */
-	public static function printAsBitmap(target: MovieClip, boundingBox: String): Void { }
+  /* Prints the target movie clip according to the boundaries specified in the parameter('bmovie', 'bmax', or 'bframe'). */
+  public static function print(target: Object, boundingBox: String): Void { }
 
-	/* Prints a level in Flash Player as a bitmap according to the boundaries specified in the parameter('bmovie', 'bmax', or 'bframe'). */
-	public static function printAsBitmapNum(level: Number, boundingBox: String): Void { }
+  /* Prints the target movie clip as a bitmap according to the boundaries specified in the parameter('bmovie', 'bmax', or 'bframe'). */
+  public static function printAsBitmap(target: MovieClip, boundingBox: String): Void { }
 
-	/* Prints the level in Flash Player according to the boundaries specified in the boundingBox parameter('bmovie', 'bmax', or 'bframe'). */
-	public static function printNum(level: Number, boundingBox: String): Void { }
+  /* Prints a level in Flash Player as a bitmap according to the boundaries specified in the parameter('bmovie', 'bmax', or 'bframe'). */
+  public static function printAsBitmapNum(level: Number, boundingBox: String): Void { }
 
-	/* Calls a function or a method of an object at periodic intervals while a SWF file plays. */
-	public static function setInterval(functionReference: Function, interval: Number, param, objectReference: Object, methodName: String): Number { }
+  /* Prints the level in Flash Player according to the boundaries specified in the boundingBox parameter('bmovie', 'bmax', or 'bframe'). */
+  public static function printNum(level: Number, boundingBox: String): Void { }
 
-	/* Changes a property value of a movie clip as the movie clip plays. */
-	public static function setProperty(target: Object, property: String, expression): Void { }
+  /* Calls a function or a method of an object at periodic intervals while a SWF file plays. */
+  public static function setInterval(functionReference: Function, interval: Number, param, objectReference: Object, methodName: String): Number { }
 
-	/* Runs a specified function after a specified delay(in milliseconds). */
-	public static function setTimeout(functionReference: Function, delay: Number, args: Object): Number { }
+  /* Changes a property value of a movie clip as the movie clip plays. */
+  public static function setProperty(target: Object, property: String, expression): Void { }
 
-	/* Provides the ability for the debugger player to outline the regions of the screen that are being redrawn. */
-	public static function showRedrawRegions(enable: Boolean, color: Number): Void { }
+  /* Runs a specified function after a specified delay(in milliseconds). */
+  public static function setTimeout(functionReference: Function, delay: Number, args: Object): Number { }
 
-	/* Stops all sounds currently playing in a SWF file without stopping the playhead. */
-	public static function stopAllSounds(): Void { }
+  /* Provides the ability for the debugger player to outline the regions of the screen that are being redrawn. */
+  public static function showRedrawRegions(enable: Boolean, color: Number): Void { }
 
-	/* Returns a string containing the target path of targetObject. */
-	public static function targetPath(targetObject: MovieClip): String { }
+  /* Stops all sounds currently playing in a SWF file without stopping the playhead. */
+  public static function stopAllSounds(): Void { }
 
-	/* Evaluates the expression and outputs the result. */
-	public static function trace(expression): Void { }
+  /* Returns a string containing the target path of targetObject. */
+  public static function targetPath(targetObject: MovieClip): String { }
 
-	/* Evaluates the parameter x as a string, decodes the string from URL - encoded format(converting all hexadecimal sequences to ASCII characters), and returns the string. */
-	public static function unescape(string: String): String { }
+  /* Evaluates the expression and outputs the result. */
+  public static function trace(expression): Void { }
 
-	/* Removes a SWF or image that was loaded by means of loadMovieNum() from Flash Player. */
-	public static function unloadMovieNum(level: Number): Void { }
+  /* Evaluates the parameter x as a string, decodes the string from URL - encoded format(converting all hexadecimal sequences to ASCII characters), and returns the string. */
+  public static function unescape(string: String): String { }
 
-	/* Updates the display when you call it within an handler or using setInterval(). */
-	public static function updateAfterEvent(): Void { }
-	
+  /* Removes a SWF or image that was loaded by means of loadMovieNum() from Flash Player. */
+  public static function unloadMovieNum(level: Number): Void { }
+
+  /* Updates the display when you call it within an handler or using setInterval(). */
+  public static function updateAfterEvent(): Void { }
 }

@@ -1,6 +1,5 @@
-class Boolean
-{
-	public function Boolean(expression: Object): Boolean { }
-	public function valueOf():Boolean { }
+class Boolean {
+  public function Boolean(expression: Object): Boolean { }
+  public function toString(): String { }
+  public function valueOf(): Boolean { }
 }
-
