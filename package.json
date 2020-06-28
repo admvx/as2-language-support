@@ -45,11 +45,13 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run webpack",
+    "vscode:prepublish": "npm test && npm run webpack",
     "webpack": "webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "test": "cd server && npm test",
+    "test:watch": "cd server && npm run test:watch",
     "clear-deps": "rm -f package-lock.json && rm -rf node_modules && rm -f client/package-lock.json && rm -rf client/node_modules && rm -f server/package-lock.json && rm -rf server/node_modules"
   },
   "devDependencies": {
