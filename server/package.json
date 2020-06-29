@@ -1,6 +1,6 @@
 {
   "name": "as2-language-support-server",
-  "description": "Example implementation of a language server in node.",
+  "description": "LSP server component of AS2 language support extension",
   "version": "1.0.0",
   "author": "Adam Vernon",
   "license": "MIT",

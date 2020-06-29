@@ -1,10 +1,13 @@
 {
   "name": "as2-language-support",
   "displayName": "AS2 Language Support",
-  "description": "Syntax highlighting and intellisense for ActionScript 2.0 in Visual Studio Code via the LSP protocol",
+  "description": "Syntax highlighting and intellisense for ActionScript 2.0 in Visual Studio Code via the Language Server Protocol",
   "repository": {
     "type": "git",
     "url": "https://github.com/admvx/as2-language-support"
+  },
+  "bugs": {
+    "url": "https://github.com/admvx/as2-language-support/issues"
   },
   "version": "1.3.2",
   "author": "Adam Vernon",
@@ -23,26 +26,20 @@
   ],
   "main": "./client/out/extension",
   "contributes": {
-    "languages": [
-      {
-        "id": "actionscript",
-        "aliases": [
-          "ActionScript",
-          "as2"
-        ],
-        "extensions": [
-          ".as"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "actionscript",
-        "scopeName": "source.as2",
-        "path": "./syntaxes/ActionScript.plist"
-      }
-    ]
+    "languages": [{
+      "id": "actionscript",
+      "aliases": [
+        "ActionScript",
+        "as2"
+      ],
+      "extensions": [".as"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "actionscript",
+      "scopeName": "source.as2",
+      "path": "./syntaxes/ActionScript.plist"
+    }]
   },
   "scripts": {
     "vscode:prepublish": "npm test && npm run webpack",
