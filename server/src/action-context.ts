@@ -419,7 +419,7 @@ export class ActionContext {
     let newSymbols: ActionParameter[];
     switch (visibilityFilter) {
       case VisibilityFilter.PUBLIC_INSTANCE:
-        newSymbols = actionClass.publicMembers;
+        newSymbols = actionClass.publicInstanceMembers;
         break;
       case VisibilityFilter.ALL_INSTANCE:
         newSymbols = actionClass.instanceMembers;
