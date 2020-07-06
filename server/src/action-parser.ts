@@ -9,19 +9,6 @@ enum ActionScope {
   CLASS = 'CLASS'
 }
 
-const commentMatcher = new RegExp([
-  /\/(\*)[^*]*\*+(?:[^*\/][^*]*\*+)*\//.source,                                       // $1: multi-line comment
-  /\/(\/)[^\n]*$/.source,                                                             // $2: single-line comment
-  /"(?:[^"\n\\]*|\\[\S\s])*"|'(?:[^'\n\\]*|\\[\S\s])*'/.source,                       // --- string, don't care about embedded EOLs
-  /(?:\breturn\s+|(?:[$\w\)\]]|\+\+|--)\s*(\/)(?![*\/]))/.source,                     // $3 (not currently used): division operator
-  /\/(?=[^*\/])[^[/\\]*(?:(?:\[(?:\\.|[^\]\\]*)*\]|\\.)[^[/\\]*)*?(\/)[gim]*/.source  // $4 (not currently used): last slash of regex
-].join('|'), 'gm');
-
-const stripComments = (str: string) => str.replace(commentMatcher, (match: string, mlc: string, slc: string) => {
-  if (mlc) return '\n'.repeat((match.match(/\r?\n/g) || []).length);
-  else return slc ? '' : match; 
-});
-
 //TODO: use onigasm for regex instead
 const Patterns = {
   IMPORT: /\bimport\s+([\w$\.\*]+)/,
@@ -36,8 +23,7 @@ const Patterns = {
   BRACES: /[{}]/g,
   MATCHED_BRACES: /{(?:(?!{).)*?}/g,
   MATCHED_BRACKETS: /\[(?:(?!\[).)*?\]/g,
-  MATCHED_PARENS: /\((?:(?!\().)*?\)/g,
-  MATCHED_STRINGS: /(?:".*?"|'.*?')/g
+  MATCHED_PARENS: /\((?:(?!\().)*?\)/g
 };
 
 export class ActionParser {
@@ -47,17 +33,13 @@ export class ActionParser {
   
   public static initialise(): PromiseLike<any> { return this.isReady; }  //Placeholder in case we need to initialise onigasm here
   
-  public instanceTest(): void { }
-  
   public static parseFile(fileUri: string, fileContent: string, deep: boolean = false, isIntrinsic: boolean = false): ActionClass {
     let fullType: string, shortType: string, superClass: string, result: RegExpExecArray, line: string;
-    
-    fileContent = stripComments(fileContent);
     
     this.wipClass = new ActionClass();
     this.wipClass.fileUri = fileUri;
     this.wipClass.isIntrinsic = isIntrinsic;
-    this.wipClass.lines = fileContent.split(/\r?\n/);
+    this.wipClass.lines = splitAndSanitize(fileContent);
     
     let includeLocations: boolean = !isIntrinsic && !! fileUri;
     let imports: string[] = [];
@@ -247,7 +229,6 @@ export class ActionParser {
           let localString = recursiveReplaceAndPreserveLength(result[2], Patterns.MATCHED_BRACES);
           localString = recursiveReplaceAndPreserveLength(localString, Patterns.MATCHED_BRACKETS);
           localString = recursiveReplaceAndPreserveLength(localString, Patterns.MATCHED_PARENS);
-          localString = recursiveReplaceAndPreserveLength(localString, Patterns.MATCHED_STRINGS);
           locals = locals.concat(this.getParameterArrayFromString(localString, false, includeLocations, lineNumber + lineCount, result.index + result[1].length));
         }
       }
@@ -264,6 +245,83 @@ export class ActionParser {
     return [lineCount, locals];
   }
   
+}
+
+enum SanitizationState {
+  BASE = 1,
+  STRING,
+  BLOCK_COMMENT
+}
+
+//TODO: update to preserve comments in line-mapped array
+export function splitAndSanitize(rawCode: string): string[] {
+  let sanitizedLines = [];
+  let rawLines = rawCode.split(/\r?\n/);
+  let state = SanitizationState.BASE;
+  let sanitizedLine: string, char: string, nextChar: string, stringDelineator: string, i: number, l: number;
+  
+  rawLines.forEach(rawLine => {
+    sanitizedLine = '';
+    state = state === SanitizationState.STRING ? SanitizationState.BASE : state;
+    nextChar = rawLine[0];
+    
+    charLoop: for (i = 0, l = rawLine.length; i < l; i++) {
+      char = nextChar;
+      nextChar = rawLine[i+1];
+      
+      stateSwitch: switch (state) {
+        case SanitizationState.BASE:
+          charSwitch: switch (char) {
+            case `'`:
+            case `"`:
+              state = SanitizationState.STRING;
+              stringDelineator = char;
+              break charSwitch;
+            case `/`:
+              if (nextChar === `/`) {
+                sanitizedLine += `//`;
+                break charLoop;
+              }
+              if (nextChar === `*`) {
+                sanitizedLine += `/*`;
+                i++;
+                state = SanitizationState.BLOCK_COMMENT;
+                break stateSwitch;
+              }
+              break charSwitch;
+          }
+          sanitizedLine += char;
+          break stateSwitch;
+          
+        case SanitizationState.STRING:
+          charSwitch: switch (char) {
+            case `\\`:
+              sanitizedLine += ` `;
+              i++;
+              break charSwitch;
+            case stringDelineator:
+              sanitizedLine += char;
+              state = SanitizationState.BASE;
+              break stateSwitch;
+          }
+          sanitizedLine += ` `;
+          break stateSwitch;
+          
+        case SanitizationState.BLOCK_COMMENT:
+          if (char === `*` && nextChar === `/`) {
+            sanitizedLine += `*/`;
+            i++;
+            state = SanitizationState.BASE;
+          } else {
+            sanitizedLine += ' ';
+          }
+          break stateSwitch;
+      }
+    }
+    sanitizedLines.push(sanitizedLine);
+  });
+  
+  return sanitizedLines;
 }
 
 export function recursiveReplace(input: string, matcher: string | RegExp, replacement = ''): string {

@@ -10,7 +10,6 @@ const tokenSplitter = /([\w\$]+)/g;                     //Captures symbol names
 const symbolMatcher = /[\w\$]+/g;                       //Like above but non-capturing
 const firstSymbolMatcher = /(^[\w\$]+)/;                //Like above but from start of string only
 const ambientValidator = /(?:^|\(|\[|,)\s*[\w\$]+$/g;   //Matches strings that end with an ambient symbol; fails for sub properties – ...hopefully
-const stringMatcher = /(?:".*?"|'.*?'|["'].*?$)/g;      //Matches string literals (complete or open to end of string)
 const braceMatcher = /{(?:(?!{).)*?}/g;                 //Matches well paired braces
 const bracketMatcher = /\[(?:(?!\[).)*?\]/g;            //Matches well paired square brackets
 const matchedParens = /\((?:(?!\().)*?\)/g;             //Matches well paired parentheses
@@ -104,7 +103,6 @@ export class ActionContext {
     
     let lineIndex = textDocumentPosition.position.line;
     let line = ambientClass.lines[lineIndex].substr(0, textDocumentPosition.position.character).trim();
-    line = line.replace(stringMatcher, '');
     line = line.replace(braceMatcher, '');
     line = line.replace(bracketMatcher, '');
     
