@@ -158,7 +158,7 @@ export class ActionClass {
     this.baseUri = DirectoryUtility.fileUriAndTypeToBaseUri(this.fileUri, this.fullType);
   }
   
-  public get publicMembers(): ActionParameter[] { return this._publicInstanceMembers; }
+  public get publicInstanceMembers(): ActionParameter[] { return this._publicInstanceMembers; }
   public get publicStaticMembers(): ActionParameter[] { return this._publicStaticMembers; }
   public get staticMembers(): ActionParameter[] { return this._staticMembers; }
   public get instanceMembers(): ActionParameter[] { return this._instanceMembers; }

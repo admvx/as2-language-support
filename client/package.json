@@ -1,6 +1,6 @@
 {
   "name": "as2-language-support-client",
-  "description": "VSCode part of a language server",
+  "description": "VSCode client component of AS2 language support extension",
   "author": "Adam Vernon",
   "license": "MIT",
   "version": "1.0.0",
