@@ -2,6 +2,13 @@
 
 Updates to the AS2 Language Support project will be documented here as new versions are released.
 
+## [1.3.3](https://github.com/admvx/as2-language-support/compare/v1.3.2...v1.3.3) - 2020-07-06
+Maintenance update:
+- Add initial unit tests (around ~40% code coverage so far)
+- Refactor parsing code to avoid server hangs
+- Include CHANGELOG.md and LICENSE files in VSCode extension bundle
+- Update dependencies to latest versions
+
 ## [1.3.2](https://github.com/admvx/as2-language-support/compare/v1.3.1...v1.3.2) - 2020-05-19
 - Add in missing methods to intrinsic classes to improve completions
 - Clean up formatting of intrinsic class files
