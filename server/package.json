@@ -9,8 +9,8 @@
   },
   "scripts": {
     "parse-intrinsics": "ts-node ./src/scripts/parse-intrinsics.ts > ./src/intrinsic-pickles.ts",
-    "test": "jest",
-    "test:watch": "npm test -- --watch"
+    "test": "jest --collectCoverage",
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.1",
