@@ -18,7 +18,7 @@
     "Programming Languages"
   ],
   "engines": {
-    "vscode": "^1.45.0"
+    "vscode": "^1.61.0"
   },
   "activationEvents": [
     "onLanguage:actionscript",
@@ -50,12 +50,12 @@
     "clear-deps": "rm -f package-lock.json && rm -rf node_modules && rm -f client/package-lock.json && rm -rf client/node_modules && rm -f server/package-lock.json && rm -rf server/node_modules"
   },
   "devDependencies": {
-    "@types/node": "^14.0.14",
-    "merge-options": "^2.0.0",
-    "ts-loader": "^7.0.5",
-    "eslint": "^7.3.1",
-    "typescript": "^3.9.5",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "@types/node": "^16.10.5",
+    "merge-options": "^3.0.4",
+    "ts-loader": "^9.2.6",
+    "eslint": "^8.0.0",
+    "typescript": "^4.4.4",
+    "webpack": "^5.58.1",
+    "webpack-cli": "^4.9.0"
   }
 }
