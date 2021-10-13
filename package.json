@@ -44,8 +44,6 @@
   "scripts": {
     "vscode:prepublish": "npm test && npm run webpack",
     "webpack": "webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
-    "compile": "tsc -b",
-    "watch": "tsc -b -w",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "cd server && npm test",
     "test:watch": "cd server && npm run test:watch",
