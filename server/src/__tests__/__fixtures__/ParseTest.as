@@ -9,7 +9,7 @@ class package.ParseTest extends MovieClip {
   var memberE: MovieClip;
   static public var memberF;
   //static var memberG;
-
+  
   public function ParseTest() {
     super();
   }
@@ -32,6 +32,7 @@ class package.ParseTest extends MovieClip {
     
   public static function methodC(): Void {
     ParseTest.memberC = true;
+    var /* mid-expression block comment */abcdef;
   }
     
   private static function methodD(): Void {
