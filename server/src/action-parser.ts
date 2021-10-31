@@ -263,10 +263,9 @@ export function splitAndSanitize(rawCode: string): string[] {
   rawLines.forEach(rawLine => {
     sanitizedLine = '';
     state = state === SanitizationState.STRING ? SanitizationState.BASE : state;
-    nextChar = rawLine[0];
     
     charLoop: for (i = 0, l = rawLine.length; i < l; i++) {
-      char = nextChar;
+      char = rawLine[i];
       nextChar = rawLine[i+1];
       
       stateSwitch: switch (state) {

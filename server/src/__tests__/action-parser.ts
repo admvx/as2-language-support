@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { ActionParser } from '../action-parser';
-import { ActionClass, ActionMethod } from '../action-elements';
+import { ActionClass, ActionMethod, VisibilityFilter } from '../action-elements';
 
 const asPath = path.resolve(__dirname, './__fixtures__/ParseTest.as');
 const testClassName = 'package.ParseTest';
@@ -40,6 +40,14 @@ test(`Parsed class should index methods and locals correctly`, async () => {
   expect(parsedMethod.parameters.length).toBe(2);
   expect(parsedMethod.locals.length).toBe(3);
   expect(parsedMethod.scopedMembers.length).toBe(5);
+});
+
+test(`Mid statement block comments shouldn't trip up the parser`, async () => {
+  let [parsedMethod, _] = <[ActionMethod, ActionClass]>await parsedClass.getMemberByName(`methodC`, VisibilityFilter.PUBLIC_STATIC);
+  expect(parsedMethod.isMethod).toBe(true);
+  expect(parsedMethod.locals.length).toBe(1);
+  expect(parsedMethod.locals[0].name).not.toBe('bcdef'); // Described in Github issue #36
+  expect(parsedMethod.locals[0].name).toBe('abcdef');
 });
 
 test(`Syntax errors shouldn't trip up the parser`, () => {

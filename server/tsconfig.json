@@ -1,13 +1,13 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2019",
-		"outDir": "out",
-		"rootDir": "src",
-		"lib": ["ES2019"],
-		"sourceMap": true,
-		"skipLibCheck": true
-	},
-	"include": ["src", "src/__tests__"],
-	"exclude": ["node_modules"]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "outDir": "out",
+    "rootDir": "src",
+    "lib": ["ES2019"],
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "src/__tests__"],
+  "exclude": ["node_modules"]
 }

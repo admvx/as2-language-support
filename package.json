@@ -9,7 +9,7 @@
   "bugs": {
     "url": "https://github.com/admvx/as2-language-support/issues"
   },
-  "version": "1.3.3",
+  "version": "1.3.4",
   "author": "Adam Vernon",
   "publisher": "admvx",
   "icon": "icon.png",
@@ -42,18 +42,20 @@
     }]
   },
   "scripts": {
-    "vscode:prepublish": "npm test && npm run webpack",
-    "webpack": "webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-    "test": "cd server && npm test",
-    "test:watch": "cd server && npm run test:watch",
+    "vscode:prepublish": "npm test && npm run compile",
+    "compile": "webpack --mode production --devtool hidden-source-map --config ./dual.webpack.config.js",
+    "watch": "webpack --watch --config ./dual.webpack.config.js",
+    "postinstall": "npm install --prefix client && npm install --prefix server",
+    "test": "npm test --prefix server",
+    "test:coverage": "npm run test:coverage --prefix server",
+    "test:resnap": "npm run test:resnap --prefix server",
+    "test:watch": "npm run test:watch --prefix server",
     "clear-deps": "rm -f package-lock.json && rm -rf node_modules && rm -f client/package-lock.json && rm -rf client/node_modules && rm -f server/package-lock.json && rm -rf server/node_modules"
   },
   "devDependencies": {
     "@types/node": "^16.10.5",
     "merge-options": "^3.0.4",
     "ts-loader": "^9.2.6",
-    "eslint": "^8.0.0",
     "typescript": "^4.4.4",
     "webpack": "^5.58.1",
     "webpack-cli": "^4.9.0"

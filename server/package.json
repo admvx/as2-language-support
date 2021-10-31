@@ -9,7 +9,9 @@
   },
   "scripts": {
     "parse-intrinsics": "ts-node ./src/scripts/parse-intrinsics.ts > ./src/intrinsic-pickles.ts",
-    "test": "jest --collectCoverage",
+    "test": "jest",
+    "test:coverage": "jest --collectCoverage",
+    "test:resnap": "jest --updateSnapshot",
     "test:watch": "jest --watch"
   },
   "devDependencies": {
