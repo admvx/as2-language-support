@@ -44,7 +44,8 @@
   "scripts": {
     "vscode:prepublish": "npm test && npm run compile",
     "compile": "webpack --mode production --devtool hidden-source-map --config ./dual.webpack.config.js",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "watch": "webpack --watch --config ./dual.webpack.config.js",
+    "postinstall": "npm install --prefix client && npm install --prefix server",
     "test": "npm test --prefix server",
     "test:coverage": "npm run test:coverage --prefix server",
     "test:resnap": "npm run test:resnap --prefix server",
