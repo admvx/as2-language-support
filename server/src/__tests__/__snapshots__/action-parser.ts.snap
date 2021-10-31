@@ -552,7 +552,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -565,7 +565,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -803,7 +803,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -816,7 +816,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1012,7 +1012,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1025,7 +1025,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1266,7 +1266,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1279,7 +1279,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1309,7 +1309,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1322,7 +1322,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1359,7 +1359,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1372,7 +1372,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1436,7 +1436,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1449,7 +1449,7 @@ ActionClass {
         Object {
           "isArgument": false,
           "isInline": true,
-          "name": "bcdef",
+          "name": "abcdef",
           "returnType": undefined,
         },
       ],
@@ -1535,12 +1535,12 @@ ActionClass {
     "    ",
     "  public static function methodC(): Void {",
     "    ParseTest.memberC = true;",
-    "    var /*                              *//bcdef;",
+    "    var /*                              */abcdef;",
     "  }",
     "    ",
     "  private static function methodD(): Void {",
     "    /*               */",
-    "    var inline1: String = '                         ' ' ",
+    "    var inline1: String = '                           ';",
     "  }",
     "  ",
     "}",
