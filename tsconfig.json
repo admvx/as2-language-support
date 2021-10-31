@@ -1,22 +1,22 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2019",
-		"outDir": "out",
-		"rootDir": "src",
-		"lib": ["ES2019"],
-		"sourceMap": true,
-		"skipLibCheck": true
-	},
-	"include": [
-		"src"
-	],
-	"exclude": [
-		"node_modules",
-		".vscode-test"
-	],
-	"references": [
-		{ "path": "./client" },
-		{ "path": "./server" }
-	]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "outDir": "out",
+    "rootDir": "src",
+    "lib": ["ES2019"],
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    ".vscode-test"
+  ],
+  "references": [
+    { "path": "./client" },
+    { "path": "./server" }
+  ]
 }
