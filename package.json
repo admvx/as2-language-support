@@ -45,8 +45,10 @@
     "vscode:prepublish": "npm test && npm run webpack",
     "webpack": "webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-    "test": "cd server && npm test",
-    "test:watch": "cd server && npm run test:watch",
+    "test": "npm test --prefix server",
+    "test:coverage": "npm run test:coverage --prefix server",
+    "test:resnap": "npm run test:resnap --prefix server",
+    "test:watch": "npm run test:watch --prefix server",
     "clear-deps": "rm -f package-lock.json && rm -rf node_modules && rm -f client/package-lock.json && rm -rf client/node_modules && rm -f server/package-lock.json && rm -rf server/node_modules"
   },
   "devDependencies": {
