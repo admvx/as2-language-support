@@ -42,8 +42,8 @@
     }]
   },
   "scripts": {
-    "vscode:prepublish": "npm test && npm run webpack",
-    "webpack": "webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
+    "vscode:prepublish": "npm test && npm run compile",
+    "compile": "webpack --mode production --devtool hidden-source-map --config ./dual.webpack.config.js",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "npm test --prefix server",
     "test:coverage": "npm run test:coverage --prefix server",
