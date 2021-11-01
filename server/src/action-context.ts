@@ -3,7 +3,7 @@ import { classAmbients, methodAmbients, generalAmbients } from './ambient-symbol
 import { ActionParser, recursiveReplace } from './action-parser';
 import { LoadQueue, DirectoryUtility } from './file-system-utilities';
 import { logIt, LogLevel, ActionConfig } from './config';
-import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover, Location } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover, Location, DocumentSymbolParams, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 
 //TODO: use onigasm for regex instead
 const tokenSplitter = /([\w\$]+)/g;                     //Captures symbol names
@@ -502,6 +502,16 @@ export class ActionContext {
     return inString;
   }
   
+  //--Symbols--//
+  //-----------//
+  public static async getDocumentSymbols(docSymParams: DocumentSymbolParams): Promise<DocumentSymbol[]> {
+    let documentPath = docSymParams.textDocument.uri;
+    let targetClass = this._classLookup[documentPath] || await this.getClassByUri(documentPath);
+    if (! targetClass) return null;
+    
+    return [targetClass.symbolTree];
+  }
+  
   //--Parsing--//
   //-----------//
   public static loadPickles(pickles: PickledClass[]): void {
@@ -550,15 +560,20 @@ export class ActionContext {
     } else {
       let path = this.typeOrPackageToPath(fullType, basePath);
       ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Type to path: ${path}` });
-      let promises: [PromiseLike<any>, Promise<string>] = [ActionParser.initialise(), LoadQueue.enqueue(path)];
-      return Promise.all(promises)
-        .then(res => {
-          if (! res) return null;
-          let ac = ActionParser.parseFile(path, res[1]);
-          this.registerClass(ac);
-          return ac;
-        })
-        .catch(() => null);
+      return this.getClassByUri(path);
+    }
+  }
+  
+  private static async getClassByUri(path: string): Promise<ActionClass> {
+    let promises: [PromiseLike<any>, Promise<string>] = [ActionParser.initialise(), LoadQueue.enqueue(path)];
+    try {
+      const res = await Promise.all(promises);
+      if (! res) return null;
+      let ac = ActionParser.parseFile(path, res[1]);
+      this.registerClass(ac);
+      return ac;
+    } catch (error) {
+      return null;
     }
   }
   

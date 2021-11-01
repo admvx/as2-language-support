@@ -1,7 +1,7 @@
 import { ActionClass, ActionParameter, ActionMethod } from './action-elements';
 import { logIt, LogLevel, ActionConfig } from './config';
 import { ActionContext } from './action-context';
-import { Range } from 'vscode-languageserver';
+import { Range, Position } from 'vscode-languageserver';
 //import { loadWASM } from 'onigasm';
 
 enum ActionScope {
@@ -34,7 +34,7 @@ export class ActionParser {
   public static initialise(): PromiseLike<any> { return this.isReady; }  //Placeholder in case we need to initialise onigasm here
   
   public static parseFile(fileUri: string, fileContent: string, deep: boolean = false, isIntrinsic: boolean = false): ActionClass {
-    let fullType: string, shortType: string, superClass: string, result: RegExpExecArray, line: string;
+    let fullType: string, shortType: string, superClass: string, result: RegExpExecArray, line: string, startPosition: Position, declarationFound: boolean;
     
     this.wipClass = new ActionClass();
     this.wipClass.fileUri = fileUri;
@@ -58,7 +58,8 @@ export class ActionParser {
             break;
           }
           
-          //Check for class declaration
+          //Check for class declaration (iff not previously found; AS2 files can contain no more than a single class)
+          if (declarationFound) break;
           Patterns.CLASS.lastIndex = 0;
           result = Patterns.CLASS.exec(line);
           if (result) {
@@ -66,6 +67,7 @@ export class ActionParser {
             if (includeLocations) {
               let charStart = result.index + result[1].length;
               this.wipClass.locationRange = { start: { line: i, character: charStart }, end: { line: i, character: charStart + result[2].length } };
+              startPosition = { line: i, character: result.index };
             }
             shortType = ActionContext.fullTypeToShortType(fullType);
             this.wipClass.fullType = fullType;
@@ -155,10 +157,26 @@ export class ActionParser {
             break;
           }
           
+          //Check for class closing brace
+          let closingBraceIndex = line.indexOf('}');
+          if (closingBraceIndex !== -1) {
+            if (includeLocations) {
+              this.wipClass.fullRange = { start: startPosition, end: { line: i, character: closingBraceIndex } };
+            }
+            scopeStack.pop();
+          }
+          
           break;
       }
     }
     
+    //Finalise class details
+    if (includeLocations) {
+      if (! this.wipClass.fullRange) {  // No closing brace encountered, so just set the limit to the end of the file
+        let lastLineIndex = this.wipClass.lines.length - 1;
+        this.wipClass.fullRange = { start: startPosition, end: { line: lastLineIndex, character: this.wipClass.lines[lastLineIndex].length } };
+      }
+    }
     this.wipClass.setupSelfReferences();
     
     //Register imports and parse external files
