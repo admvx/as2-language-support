@@ -505,10 +505,11 @@ export class ActionContext {
   //--Symbols--//
   //-----------//
   public static async getDocumentSymbols(docSymParams: DocumentSymbolParams): Promise<DocumentSymbol[]> {
-    let range = { start: { line: 0, character: 0 }, end: { line: 0, character: 10 } };
-    return [
-      { name: `babby's first symbol`, kind: SymbolKind.Class, range: range, selectionRange: range }
-    ];
+    let documentPath = docSymParams.textDocument.uri;
+    let targetClass = this._classLookup[documentPath] || await this.getClassByUri(documentPath);
+    if (! targetClass) return null;
+    
+    return [targetClass.symbolTree];
   }
   
   //--Parsing--//
@@ -559,15 +560,20 @@ export class ActionContext {
     } else {
       let path = this.typeOrPackageToPath(fullType, basePath);
       ActionConfig.LOG_LEVEL !== LogLevel.NONE && logIt({ level: LogLevel.VERBOSE, message: `Type to path: ${path}` });
-      let promises: [PromiseLike<any>, Promise<string>] = [ActionParser.initialise(), LoadQueue.enqueue(path)];
-      return Promise.all(promises)
-        .then(res => {
-          if (! res) return null;
-          let ac = ActionParser.parseFile(path, res[1]);
-          this.registerClass(ac);
-          return ac;
-        })
-        .catch(() => null);
+      return this.getClassByUri(path);
+    }
+  }
+  
+  private static async getClassByUri(path: string): Promise<ActionClass> {
+    let promises: [PromiseLike<any>, Promise<string>] = [ActionParser.initialise(), LoadQueue.enqueue(path)];
+    try {
+      const res = await Promise.all(promises);
+      if (! res) return null;
+      let ac = ActionParser.parseFile(path, res[1]);
+      this.registerClass(ac);
+      return ac;
+    } catch (error) {
+      return null;
     }
   }
   

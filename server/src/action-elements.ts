@@ -1,6 +1,6 @@
 import { ActionContext } from './action-context';
 import { logIt, LogLevel, ActionConfig } from './config';
-import { SignatureInformation, Range } from 'vscode-languageserver';
+import { SignatureInformation, Range, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { DirectoryUtility } from './file-system-utilities';
 
 export class ActionClass {
@@ -15,6 +15,7 @@ export class ActionClass {
   public lines: string[];
   public constructorMethod: ActionMethod;
   public locationRange: Range;
+  public fullRange: Range;
   
   private _description: string;
   private _memberLookup: { [propName: string]: ActionParameter } = Object.create(null);
@@ -23,6 +24,8 @@ export class ActionClass {
   private _publicStaticMemberLookup: { [propName: string]: ActionParameter } = Object.create(null);
   private _staticMemberLookup: { [propName: string]: ActionParameter } = Object.create(null);
   private _importMap: { [shortType: string]: string } = Object.create(null);
+  private _symbolChildren: DocumentSymbol[] = [];
+  private _symbolTree: DocumentSymbol;
   private _imports: string[] = [];
   private _wildcardImports: string[] = [];
   private _members: ActionParameter[] = [];
@@ -156,6 +159,7 @@ export class ActionClass {
     }
     this._importMap[this.shortType] = this.fullType;
     this.baseUri = DirectoryUtility.fileUriAndTypeToBaseUri(this.fileUri, this.fullType);
+    this._symbolTree = { name: this.shortType, kind: SymbolKind.Class, range: this.fullRange, selectionRange: this.locationRange };
   }
   
   public get publicInstanceMembers(): ActionParameter[] { return this._publicInstanceMembers; }
@@ -163,9 +167,8 @@ export class ActionClass {
   public get staticMembers(): ActionParameter[] { return this._staticMembers; }
   public get instanceMembers(): ActionParameter[] { return this._instanceMembers; }
   public get members(): ActionParameter[] { return this._members; }
-  public get importMap(): { [shortType: string]: string } {
-    return this._importMap;
-  }
+  public get symbolTree(): DocumentSymbol { return this._symbolTree; }
+  public get importMap(): { [shortType: string]: string } { return this._importMap; }
   public get description(): string {
     this._description = this._description || '(' + (this.isIntrinsic ? 'intrinsic ' : '') + 'class) ' + this.fullType;
     return this._description;
