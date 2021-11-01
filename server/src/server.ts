@@ -22,7 +22,8 @@ connection.onInitialize((params) => {
       completionProvider: { resolveProvider: false, triggerCharacters: ['.'] },
       signatureHelpProvider: { triggerCharacters: ['(', ','] },
       hoverProvider: true,
-      definitionProvider: true
+      definitionProvider: true,
+      documentSymbolProvider: true
     }
   };
 });
@@ -41,4 +42,5 @@ ActionParser.initialise()
     connection.onSignatureHelp((docPos, token) => ActionContext.getSignatureHelp(docPos, token));
     connection.onHover(docPos => ActionContext.getHoverInfo(docPos));
     connection.onDefinition(docPos => ActionContext.getDefinition(docPos));
+    connection.onDocumentSymbol(docSymParams => ActionContext.getDocumentSymbols(docSymParams));
   });

@@ -3,7 +3,7 @@ import { classAmbients, methodAmbients, generalAmbients } from './ambient-symbol
 import { ActionParser, recursiveReplace } from './action-parser';
 import { LoadQueue, DirectoryUtility } from './file-system-utilities';
 import { logIt, LogLevel, ActionConfig } from './config';
-import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover, Location } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, CompletionParams, CancellationToken, CompletionTriggerKind, TextDocumentPositionParams, SignatureHelp, Hover, Location, DocumentSymbolParams, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 
 //TODO: use onigasm for regex instead
 const tokenSplitter = /([\w\$]+)/g;                     //Captures symbol names
@@ -500,6 +500,15 @@ export class ActionContext {
       }
     }
     return inString;
+  }
+  
+  //--Symbols--//
+  //-----------//
+  public static async getDocumentSymbols(docSymParams: DocumentSymbolParams): Promise<DocumentSymbol[]> {
+    let range = { start: { line: 0, character: 0 }, end: { line: 0, character: 10 } };
+    return [
+      { name: `babby's first symbol`, kind: SymbolKind.Class, range: range, selectionRange: range }
+    ];
   }
   
   //--Parsing--//
